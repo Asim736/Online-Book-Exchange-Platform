@@ -69,7 +69,7 @@ nano .env
 Add the following variables:
 ```env
 # MongoDB Atlas Connection
-MONGODB_URI=***REMOVED***@cluster.mongodb.net/bookexchange?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/bookexchange?retryWrites=true&w=majority
 
 # JWT Secret (generate a strong secret)
 JWT_SECRET=***REMOVED***
@@ -200,7 +200,7 @@ amplify publish
 2. **Configure Connection**:
    ```javascript
    // Update MONGODB_URI in server .env
-   MONGODB_URI=***REMOVED***@cluster.mongodb.net/bookexchange
+   MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/bookexchange
    ```
 
 ### SSL Certificate for EC2 (Optional)
