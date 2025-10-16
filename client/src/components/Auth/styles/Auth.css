@@ -1,0 +1,256 @@
+.auth-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+}
+
+.auth-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+}
+
+.auth-card h2 {
+  font-size: 2rem;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.auth-subtitle {
+  color: #4a5568;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-group input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  outline: none;
+}
+
+.auth-button {
+  background: linear-gradient(45deg, #7c3aed, #6d28d9);
+  color: white;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  color: #4a5568;
+}
+
+.auth-footer a {
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.forgot-password-link {
+  color: #7c3aed;
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+  align-self: flex-end;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
+
+.success-message {
+  text-align: center;
+  color: #047857;
+  padding: 1rem;
+}
+
+.success-message p {
+  margin-bottom: 1.5rem;
+}
+
+.success-message .auth-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Tablet styles */
+@media (max-width: 992px) {
+  .auth-container {
+    padding: 1.5rem;
+  }
+  
+  .auth-card {
+    padding: 2rem;
+  }
+  
+  .auth-card h2 {
+    font-size: 1.8rem;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 1rem;
+    min-height: calc(100vh - 150px);
+  }
+  
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    max-width: 100%;
+  }
+  
+  .auth-card h2 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .auth-subtitle {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .auth-form {
+    gap: 1.25rem;
+  }
+  
+  .form-group input {
+    padding: 0.6rem;
+    font-size: 0.95rem;
+  }
+  
+  .auth-button {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Small mobile styles */
+@media (max-width: 576px) {
+  .auth-container {
+    padding: 0.75rem;
+    min-height: calc(100vh - 120px);
+  }
+  
+  .auth-card {
+    padding: 1.25rem;
+    border-radius: 8px;
+  }
+  
+  .auth-card h2 {
+    font-size: 1.4rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .auth-form {
+    gap: 1rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .form-group input {
+    padding: 0.55rem;
+    font-size: 0.9rem;
+  }
+  
+  .auth-button {
+    padding: 0.65rem;
+    font-size: 0.9rem;
+  }
+  
+  .forgot-password-link {
+    font-size: 0.8rem;
+  }
+  
+  .auth-footer {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 375px) {
+  .auth-container {
+    padding: 0.5rem;
+  }
+  
+  .auth-card {
+    padding: 1rem;
+  }
+  
+  .auth-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .form-group input {
+    padding: 0.5rem;
+  }
+  
+  .auth-button {
+    padding: 0.6rem;
+  }
+}

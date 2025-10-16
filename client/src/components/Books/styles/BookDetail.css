@@ -1,0 +1,1953 @@
+/* Modern Book Detail Styles */
+.book-detail-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #1a1a1a;
+  min-height: 100vh;
+  color: white;
+}
+
+/* Animation for Modern Image Viewer */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Zoom Modal White Background Override */
+.zoom-modal-white-background {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  background-attachment: initial !important;
+  background-blend-mode: initial !important;
+  background-clip: initial !important;
+  background-origin: initial !important;
+  background-position: initial !important;
+  background-repeat: initial !important;
+  background-size: initial !important;
+}
+
+/* Modern Square Image Container */
+.square-image-container:hover .zoom-indicator {
+  opacity: 1 !important;
+}
+
+.square-image-container:hover .modern-overlay {
+  opacity: 1 !important;
+}
+
+.modern-nav-arrow:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 1) !important;
+  transform: translateY(-50%) scale(1.1) !important;
+  color: #3b82f6 !important;
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.25), 0 6px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Circular Button Icon Visibility Fix */
+.zoom-modal-white-background button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.zoom-modal-white-background button svg {
+  display: block !important;
+  pointer-events: none !important;
+  color: inherit !important;
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+/* Close Button Specific Styling */
+.zoom-modal-white-background button[onclick*="closeZoomView"] {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid rgba(0, 0, 0, 0.15) !important;
+  color: #333 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.zoom-modal-white-background button[onclick*="closeZoomView"]:hover {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  border-color: rgba(220, 53, 69, 0.4) !important;
+  color: #dc3545 !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Navigation Arrow Buttons */
+.zoom-modal-white-background .position-absolute button {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  color: #333 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.zoom-modal-white-background .position-absolute button:hover {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #333 !important;
+  opacity: 1 !important;
+}
+
+/* Mobile Responsive Circular Buttons */
+@media (max-width: 768px) {
+  .zoom-modal-white-background button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+  }
+  
+  .zoom-modal-white-background button svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke-width: 2.5 !important;
+  }
+  
+  .zoom-modal-white-background .position-absolute button {
+    width: 46px !important;
+    height: 46px !important;
+  }
+  
+  .zoom-modal-white-background .position-absolute button svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .zoom-modal-white-background button {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+  
+  .zoom-modal-white-background button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .zoom-modal-white-background .position-absolute button {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+/* Mobile-specific styles for zoom modal */
+@media (max-width: 768px) {
+  .zoom-modal-container {
+    padding: 0 !important;
+  }
+  
+  .zoom-modal-image {
+    max-width: 95vw !important;
+    max-height: 75vh !important;
+    min-width: 200px !important;
+    min-height: 200px !important;
+    width: auto !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    object-fit: contain !important;
+    background-color: rgba(255,255,255,0.1) !important;
+    border-radius: 8px !important;
+  }
+  
+  .zoom-controls {
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+  }
+  
+  .zoom-nav-button {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* Loading State */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-message {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-message h2 {
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.back-to-browse {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-link {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+}
+
+.breadcrumb-link:hover {
+  color: white;
+}
+
+.breadcrumb-separator {
+  color: #6b7280;
+}
+
+.breadcrumb-current {
+  color: #d1d5db;
+}
+
+/* Main Content Layout */
+.book-detail-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* Left Column - Book Image */
+.book-image-section {
+  position: sticky;
+  top: 2rem;
+}
+
+.book-image-container {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.book-cover-large {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  max-height: 500px;
+  object-fit: cover;
+}
+
+/* Image Navigation */
+.image-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.book-image-container:hover .image-nav-btn {
+  opacity: 1;
+}
+
+.image-nav-btn.prev {
+  left: 10px;
+}
+
+.image-nav-btn.next {
+  right: 10px;
+}
+
+.image-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Image Indicators */
+.image-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 12px;
+  border-radius: 20px;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+.image-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+/* Right Column - Book Info */
+.book-info-section {
+  padding: 0;
+}
+
+.book-header {
+  margin-bottom: 2rem;
+}
+
+.breadcrumb-genre {
+  margin-bottom: 0.5rem;
+}
+
+.breadcrumb-genre span {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.book-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0.5rem 0;
+  line-height: 1.1;
+}
+
+.book-author {
+  font-size: 1.25rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.book-description {
+  margin-bottom: 2rem;
+}
+
+.book-description h2 {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.book-description p {
+  color: #d1d5db;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* Book Details Grid */
+.book-details-grid {
+  margin-bottom: 2rem;
+}
+
+.book-details-grid h2 {
+  font-size: 1.5rem;
+  color: white;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.details-grid {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.detail-value {
+  color: white;
+  font-weight: 500;
+}
+
+.detail-value.condition {
+  font-weight: 600;
+}
+
+/* Owner Section */
+.owner-section {
+  margin-bottom: 2rem;
+}
+
+.owner-section h3 {
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.owner-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.owner-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.owner-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.owner-name {
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.owner-status {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* Action Section */
+.action-section {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.request-exchange-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.request-exchange-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.request-exchange-btn:disabled {
+  background: #374151;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.owner-message {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.owner-message p {
+  color: #3b82f6;
+  margin: 0;
+  font-weight: 500;
+}
+
+.wishlist-btn {
+  background: transparent;
+  color: #9ca3af;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.wishlist-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+}
+
+.wishlist-btn.wishlisted {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+}
+
+/* Purchase Section */
+.purchase-section {
+  margin-bottom: 2rem;
+}
+
+.purchase-section h3 {
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.purchase-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.purchase-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.purchase-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.purchase-link.amazon {
+  background: rgba(255, 152, 0, 0.1);
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.purchase-link.daraz {
+  background: rgba(255, 87, 34, 0.1);
+  border-color: #ff5722;
+  color: #ff5722;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.request-modal {
+  background: #1f2937;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.request-book-info {
+  margin-bottom: 1.5rem;
+}
+
+.book-info-mini {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.book-thumb {
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.book-info-mini strong {
+  color: white;
+  font-size: 1.1rem;
+  display: block;
+}
+
+.book-info-mini p {
+  color: #9ca3af;
+  margin: 0.25rem 0;
+}
+
+.book-info-mini small {
+  color: #6b7280;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form label {
+  color: white;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  resize: vertical;
+  color: white;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+textarea::placeholder {
+  color: #6b7280;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.submit-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.submit-btn:hover {
+  background: #059669;
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .book-detail-container {
+    padding: 16px;
+  }
+  
+  .book-detail-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .book-image-section {
+    position: static;
+  }
+  
+  .book-title {
+    font-size: 2rem;
+  }
+  
+  .details-grid {
+    padding: 1rem;
+  }
+  
+  .request-modal {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .breadcrumb {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .book-title {
+    font-size: 1.75rem;
+  }
+  
+  .book-image-container {
+    padding: 15px;
+  }
+  
+  .purchase-links {
+    flex-direction: column;
+  }
+  
+  .purchase-link {
+    justify-content: center;
+  }
+  /* Add these styles to your existing BookDetail.css */
+
+/* Zoom Button */
+.zoom-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-image-container:hover .zoom-btn {
+  opacity: 1;
+}
+
+.zoom-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+/* Thumbnail Gallery */
+.thumbnail-gallery {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 100px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f5f5f5;
+  padding: 0;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail.active {
+  border-color: #4CAF50;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.thumbnail:not(.active) {
+  opacity: 0.6;
+}
+
+.thumbnail:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Zoom Modal Overlay */
+.zoom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.zoom-modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Zoom Close Button */
+.zoom-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 36px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.zoom-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 10px 15px;
+  border-radius: 25px;
+  z-index: 10001;
+  align-items: center;
+}
+
+.zoom-control-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  color: #333;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.zoom-control-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.zoom-control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-level {
+  color: white;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* Zoom Navigation Buttons */
+.zoom-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 48px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-nav-prev {
+  left: 20px;
+}
+
+.zoom-nav-next {
+  right: 20px;
+}
+
+.zoom-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Zoom Image Container */
+.zoom-image-container {
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.zoom-image-container img {
+  max-width: none;
+  display: block;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+}
+
+/* Zoom Image Counter */
+.zoom-image-counter {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  z-index: 10001;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .thumbnail-gallery {
+    gap: 8px;
+  }
+
+  .thumbnail {
+    width: 60px;
+    height: 80px;
+  }
+
+  .zoom-close-btn {
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+  }
+
+  .zoom-controls {
+    top: 10px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .zoom-control-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+
+  .zoom-level {
+    font-size: 14px;
+    min-width: 50px;
+  }
+
+  .zoom-nav-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 36px;
+  }
+
+  .zoom-nav-prev {
+    left: 10px;
+  }
+
+  .zoom-nav-next {
+    right: 10px;
+  }
+
+  .zoom-image-counter {
+    bottom: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .zoom-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+}
+
+/* Amazon-Inspired Image Section - Override Bootstrap */
+.card .row .col-md-5.amazon-image-section {
+  position: sticky !important;
+  top: 20px !important;
+  height: fit-content !important;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #f5f5f5 100%) !important;
+  border-radius: 16px !important;
+  padding: 25px !important;
+  border: none !important;
+}
+
+.amazon-image-section .amazon-image-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  max-width: 450px !important;
+  margin: 0 auto !important;
+}
+
+/* Main Image Container */
+.amazon-image-section .main-image-wrapper {
+  position: relative !important;
+  margin-bottom: 20px !important;
+  width: 100% !important;
+  max-width: 380px !important;
+}
+
+.amazon-image-section .main-image-container {
+  position: relative !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 25px !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+    0 2px 4px -1px rgba(0, 0, 0, 0.03),
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+.amazon-image-section .main-image-container:hover {
+  box-shadow: 
+    0 10px 16px -4px rgba(0, 0, 0, 0.08), 
+    0 4px 6px -2px rgba(0, 0, 0, 0.04),
+    0 20px 25px -5px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* Main Image Zoom Wrapper */
+.amazon-image-section .main-image-zoom-wrapper {
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+}
+
+.amazon-image-section .main-book-image {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 450px !important;
+  object-fit: contain !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  display: block !important;
+}
+
+.amazon-image-section .main-image-container:hover .main-book-image {
+  transform: scale(1.08) !important;
+}
+
+/* Zoom Indicator */
+.zoom-indicator {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(35, 47, 62, 0.85);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 24px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-image-container:hover .zoom-indicator {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.zoom-indicator span {
+  font-size: 16px;
+}
+
+.zoom-indicator small {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Navigation Arrows */
+.image-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #232f3e;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.main-image-container:hover .image-nav-arrow {
+  opacity: 1;
+}
+
+.prev-arrow {
+  left: 12px;
+}
+
+.next-arrow {
+  right: 12px;
+}
+
+.image-nav-arrow:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  color: #ff9900;
+}
+
+/* Thumbnail Gallery - Amazon Style */
+.amazon-image-section .thumbnail-gallery-container {
+  width: 100% !important;
+  max-width: 380px !important;
+  padding: 15px 10px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.amazon-image-section .thumbnail-gallery {
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  padding: 5px 0 !important;
+}
+
+.amazon-image-section .thumbnail-item {
+  position: relative !important;
+  width: 60px !important;
+  height: 76px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  border: 2px solid transparent !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  background: #ffffff !important;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+.thumbnail-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.thumbnail-item:hover {
+  border-color: #232f3e;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-item:hover img {
+  transform: scale(1.1);
+}
+
+.thumbnail-item.active {
+  border-color: #ff9900;
+  box-shadow: 
+    0 0 0 1px #ff9900, 
+    0 4px 12px rgba(255, 153, 0, 0.25),
+    0 2px 6px rgba(255, 153, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.thumbnail-item.active img {
+  transform: scale(1.05);
+}
+
+.thumbnail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.05));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.thumbnail-item:not(.active) .thumbnail-overlay {
+  opacity: 1;
+}
+
+.thumbnail-item:hover .thumbnail-overlay,
+.thumbnail-item.active .thumbnail-overlay {
+  opacity: 0;
+}
+
+/* Active indicator for thumbnails */
+.thumbnail-active-indicator {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #ff9900;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(255, 153, 0, 0.4);
+}
+
+/* Image Counter */
+.image-counter {
+  margin-top: 15px;
+  color: #6b7280;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile-First Responsive Design for Amazon-style layout */
+
+/* Tablet and small desktop */
+@media (max-width: 992px) {
+  div.card div.row div.col-md-5.amazon-image-section {
+    position: static !important;
+    padding: 25px 20px !important;
+    border-radius: 14px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  div.amazon-image-section div.main-image-wrapper {
+    max-width: 350px !important;
+  }
+  
+  div.amazon-image-section div.main-image-container {
+    padding: 20px !important;
+  }
+}
+
+/* Mobile landscape and small tablets */
+@media (max-width: 768px) {
+  /* Force full-width layout on mobile */
+  .card .row {
+    flex-direction: column !important;
+  }
+  
+  div.card div.row div.col-md-5.amazon-image-section {
+    position: static !important;
+    padding: 20px 15px !important;
+    border-radius: 12px !important;
+    margin-bottom: 15px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  div.amazon-image-section div.amazon-image-container {
+    max-width: 100% !important;
+    padding: 0 10px !important;
+  }
+  
+  div.amazon-image-section div.main-image-wrapper {
+    max-width: 320px !important;
+    margin: 0 auto 15px auto !important;
+  }
+  
+  div.amazon-image-section div.main-image-container {
+    padding: 18px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Optimize hover effects for mobile */
+  div.amazon-image-section div.main-image-container:hover {
+    transform: translateY(-1px) !important;
+  }
+  
+  div.amazon-image-section div.main-image-container:hover img.main-book-image {
+    transform: scale(1.03) !important;
+  }
+  
+  /* Mobile-optimized thumbnail gallery */
+  div.amazon-image-section div.thumbnail-gallery-container {
+    max-width: 320px !important;
+    padding: 12px 8px !important;
+    margin: 0 auto !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-gallery {
+    gap: 8px !important;
+    padding: 8px 0 !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-item {
+    width: 50px !important;
+    height: 64px !important;
+    border-radius: 6px !important;
+  }
+  
+  /* Mobile navigation arrows */
+  div.amazon-image-section .image-nav-arrow {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 22px !important;
+  }
+  
+  div.amazon-image-section .prev-arrow {
+    left: 8px !important;
+  }
+  
+  div.amazon-image-section .next-arrow {
+    right: 8px !important;
+  }
+  
+  /* Mobile zoom indicator */
+  div.amazon-image-section .zoom-indicator {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    border-radius: 16px !important;
+  }
+  
+  div.amazon-image-section .zoom-indicator span {
+    font-size: 12px !important;
+  }
+  
+  /* Mobile image counter */
+  div.amazon-image-section .image-counter {
+    margin-top: 12px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 576px) {
+  div.card div.row div.col-md-5.amazon-image-section {
+    padding: 15px 10px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  div.amazon-image-section div.main-image-wrapper {
+    max-width: 280px !important;
+  }
+  
+  div.amazon-image-section div.main-image-container {
+    padding: 15px !important;
+  }
+  
+  /* Smaller thumbnails for small screens */
+  div.amazon-image-section div.thumbnail-gallery-container {
+    max-width: 280px !important;
+    padding: 10px 6px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-gallery {
+    gap: 6px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-item {
+    width: 44px !important;
+    height: 56px !important;
+  }
+  
+  /* Smaller navigation for very small screens */
+  div.amazon-image-section .image-nav-arrow {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 20px !important;
+  }
+  
+  div.amazon-image-section .prev-arrow {
+    left: 6px !important;
+  }
+  
+  div.amazon-image-section .next-arrow {
+    right: 6px !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  div.amazon-image-section div.main-image-wrapper {
+    max-width: 250px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-gallery-container {
+    max-width: 250px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-item {
+    width: 40px !important;
+    height: 52px !important;
+  }
+  
+  div.amazon-image-section .image-nav-arrow {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* Very small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  div.card div.row div.col-md-5.amazon-image-section {
+    padding: 12px 8px !important;
+  }
+  
+  div.amazon-image-section div.main-image-wrapper {
+    max-width: 220px !important;
+  }
+  
+  div.amazon-image-section div.main-image-container {
+    padding: 12px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-gallery-container {
+    max-width: 220px !important;
+    padding: 8px 4px !important;
+  }
+  
+  div.amazon-image-section div.thumbnail-item {
+    width: 36px !important;
+    height: 48px !important;
+  }
+  
+  div.amazon-image-section .image-nav-arrow {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth transitions for image switching */
+.main-book-image {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced focus states for accessibility */
+.amazon-image-section .thumbnail-item:focus {
+  outline: 2px solid #ff9900 !important;
+  outline-offset: 2px !important;
+  border-color: #ff9900 !important;
+}
+
+.amazon-image-section .image-nav-arrow:focus {
+  outline: 2px solid #ff9900 !important;
+  outline-offset: 2px !important;
+}
+
+/* CRITICAL: Amazon-Style Override - Highest Priority */
+div.card div.row div.col-md-5.amazon-image-section {
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #f5f5f5 100%) !important;
+  padding: 30px 20px !important;
+  border-radius: 16px !important;
+  position: sticky !important;
+  top: 20px !important;
+  height: fit-content !important;
+}
+
+/* Force Amazon container styles */
+div.amazon-image-section div.amazon-image-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  max-width: 450px !important;
+  margin: 0 auto !important;
+}
+
+/* Force main image wrapper */
+div.amazon-image-section div.main-image-wrapper {
+  position: relative !important;
+  margin-bottom: 20px !important;
+  width: 100% !important;
+  max-width: 380px !important;
+}
+
+/* Force main image container */
+div.amazon-image-section div.main-image-container {
+  position: relative !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 25px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Force hover effects */
+div.amazon-image-section div.main-image-container:hover {
+  box-shadow: 0 10px 16px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04), 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* Force main image styles */
+div.amazon-image-section img.main-book-image {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 450px !important;
+  object-fit: contain !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  display: block !important;
+}
+
+/* Force zoom effect */
+div.amazon-image-section div.main-image-container:hover img.main-book-image {
+  transform: scale(1.08) !important;
+}
+
+/* Force thumbnail gallery */
+div.amazon-image-section div.thumbnail-gallery-container {
+  width: 100% !important;
+  max-width: 380px !important;
+  padding: 15px 10px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  margin-top: 0 !important;
+}
+
+/* Force thumbnail items */
+div.amazon-image-section div.thumbnail-item {
+  position: relative !important;
+  width: 60px !important;
+  height: 76px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  border: 2px solid transparent !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Force thumbnail hover effects */
+div.amazon-image-section div.thumbnail-item:hover {
+  border-color: #232f3e !important;
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Force active thumbnail */
+div.amazon-image-section div.thumbnail-item.active {
+  border-color: #ff9900 !important;
+  box-shadow: 0 0 0 1px #ff9900, 0 4px 12px rgba(255, 153, 0, 0.25), 0 2px 6px rgba(255, 153, 0, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Mobile Touch Enhancements */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  div.amazon-image-section div.thumbnail-item {
+    min-height: 44px !important; /* iOS accessibility guidelines */
+    touch-action: manipulation !important;
+  }
+  
+  div.amazon-image-section .image-nav-arrow {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    touch-action: manipulation !important;
+  }
+  
+  /* Reduce animation intensity on mobile for better performance */
+  div.amazon-image-section div.thumbnail-item:hover {
+    transform: translateY(-1px) scale(1.01) !important;
+  }
+  
+  /* Disable hover effects on touch devices */
+  @media (hover: none) {
+    div.amazon-image-section div.main-image-container:hover {
+      transform: none !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    div.amazon-image-section div.main-image-container:hover img.main-book-image {
+      transform: none !important;
+    }
+    
+    div.amazon-image-section div.thumbnail-item:hover {
+      transform: none !important;
+      border-color: transparent !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+    }
+  }
+  
+  /* Show zoom indicator persistently on mobile */
+  @media (hover: none) {
+    div.amazon-image-section .zoom-indicator {
+      opacity: 0.8 !important;
+    }
+  }
+}
+
+/* Mobile Gesture Support */
+div.amazon-image-section div.main-image-zoom-wrapper {
+  touch-action: pan-x pan-y !important;
+}
+
+/* Smooth scrolling for thumbnail gallery on mobile */
+div.amazon-image-section div.thumbnail-gallery {
+  overflow-x: auto !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Hide scrollbar on webkit browsers */
+div.amazon-image-section div.thumbnail-gallery::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Mobile Swipe Hint */
+.mobile-swipe-hint {
+  text-align: center !important;
+  margin-top: 8px !important;
+  opacity: 0.7 !important;
+  display: none !important;
+}
+
+.mobile-swipe-hint small {
+  color: #6b7280 !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-swipe-hint {
+    display: block !important;
+  }
+}
+
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+  /* Reduce will-change to improve performance */
+  div.amazon-image-section div.main-image-container,
+  div.amazon-image-section div.thumbnail-item {
+    will-change: auto !important;
+  }
+  
+  /* Optimize animations for mobile */
+  div.amazon-image-section * {
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Improve thumbnail gallery scrolling on mobile */
+  div.amazon-image-section div.thumbnail-gallery {
+    padding-bottom: 10px !important;
+  }
+  
+  /* Add subtle gradient fade for scrollable gallery */
+  div.amazon-image-section div.thumbnail-gallery-container::after {
+    content: '' !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 20px !important;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8)) !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Disabled Navigation Button States */
+div.amazon-image-section .image-nav-arrow:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* Mobile Touch Feedback */
+@media (max-width: 768px) {
+  /* Touch feedback for main image */
+  div.amazon-image-section .main-image-zoom-wrapper:active {
+    transform: scale(0.98) !important;
+  }
+  
+  /* Touch feedback for thumbnails */
+  div.amazon-image-section div.thumbnail-item:active {
+    transform: scale(0.95) !important;
+  }
+  
+  /* Touch feedback for navigation */
+  div.amazon-image-section .image-nav-arrow:active {
+    transform: translateY(-50%) scale(0.9) !important;
+  }
+}
+
+/* Improved Mobile Layout */
+@media (max-width: 768px) {
+  /* Ensure proper column stacking on mobile */
+  .card .row .col-md-7 {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+  
+  /* Mobile-specific image container adjustments */
+  div.amazon-image-section div.main-image-container {
+    position: relative !important;
+    overflow: visible !important; /* Allow shadows to show */
+  }
+  
+  /* Optimize thumbnail gallery for horizontal scrolling */
+  div.amazon-image-section div.thumbnail-gallery {
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  
+  /* Ensure minimum thumbnail sizes on mobile */
+  div.amazon-image-section div.thumbnail-item {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* Dark mode support for mobile */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+  .mobile-swipe-hint small {
+    color: #9ca3af !important;
+  }
+  
+  div.amazon-image-section .zoom-indicator {
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+  }
+}
+}

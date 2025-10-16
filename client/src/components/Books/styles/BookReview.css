@@ -1,0 +1,35 @@
+.book-review {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.rating-container {
+  margin-bottom: 15px;
+}
+
+.star {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ddd;
+  margin-right: 5px;
+  transition: color 0.2s;
+}
+
+.star.active {
+  color: #9c27b0;
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 100px;
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,352 @@
+/* AGGRESSIVE OVERRIDE - FORCE EXACT REFERENCE DESIGN */
+.book-card,
+*[class*="book-card"],
+*[class="book-card"] {
+  all: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  position: relative !important;
+  height: auto !important;
+  border: 0 !important;
+  outline: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.book-card:hover,
+*[class*="book-card"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.book-image-container {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  background: #f9fafb;
+  width: 350%;
+}
+
+.book-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.book-card:hover .book-cover {
+  transform: scale(1.05);
+}
+
+/* Wishlist Heart Button */
+.wishlist-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.9));
+}
+
+.wishlist-btn.wishlisted {
+  color: #ef4444;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.wishlist-btn.wishlisted:hover {
+  color: #dc2626;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.7));
+}
+
+.wishlist-btn.wishlisted:hover {
+  color: #dc2626;
+}
+
+/* Image Navigation Buttons */
+.image-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-card:hover .image-nav-btn {
+  opacity: 1;
+}
+
+.image-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prev-btn {
+  left: 8px;
+}
+
+.next-btn {
+  right: 8px;
+}
+
+
+.book-status-badges {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 10;
+  max-width: 80px;
+  align-items: flex-end;
+}
+
+.status-badge {
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 16px;
+  max-width: 80px;
+}
+
+.status-badge.available {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.status-badge.new {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.status-badge.borrowed {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+.status-badge.reserved {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.status-badge.pending {
+  background: #8b5cf6 !important;
+  color: white !important;
+}
+
+.status-badge.exchanged {
+  background: #6b7280 !important;
+  color: white !important;
+}
+
+/* Limit badge container height to prevent overflow */
+.book-status-badges {
+  max-height: 75px;
+  overflow: hidden;
+}
+
+.book-card .book-info,
+*[class*="book-card"] .book-info {
+  all: unset !important;
+  display: block !important;
+  padding: 1.5rem !important;
+  background: white !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.book-card .book-image-container,
+*[class*="book-card"] .book-image-container {
+  all: unset !important;
+  display: block !important;
+  position: relative !important;
+  height: 280px !important;
+  overflow: hidden !important;
+  background: #f8f9fa !important;
+  width: 100% !important;
+}
+
+.book-card .book-cover,
+*[class*="book-card"] .book-cover,
+.book-card img,
+*[class*="book-card"] img {
+  all: unset !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 0.3s ease !important;
+}
+
+.book-card .book-title,
+.book-card h3,
+.book-card .book-info h3,
+.book-card .book-info h4,
+*[class*="book-card"] h3,
+*[class*="book-card"] h4,
+*[class*="book-card"] .book-title {
+  all: unset !important;
+  display: block !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  margin: 0 0 0.5rem 0 !important;
+  line-height: 1.4 !important;
+}
+
+.book-card .book-author,
+.book-card p,
+*[class*="book-card"] .book-author,
+*[class*="book-card"] p {
+  all: unset !important;
+  display: block !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 0.875rem !important;
+  color: #6b7280 !important;
+  margin: 0 0 0.75rem 0 !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+
+.book-meta {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.book-card .genre-tag,
+*[class*="book-card"] .genre-tag {
+  all: unset !important;
+  display: inline-block !important;
+  padding: 4px 8px !important;
+  background: #dbeafe !important;
+  color: #2563eb !important;
+  border-radius: 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.volume-tag {
+  padding: 4px 12px;
+  background: #f0f9ff;
+  color: #0891b2;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #e0f7fa;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .book-image-container {
+    height: 240px;
+  }
+  
+  .book-info {
+    padding: 1rem;
+  }
+  
+  .book-title {
+    font-size: 1.1rem;
+  }
+  
+  .book-meta {
+    gap: 0.5rem;
+  }
+
+  /* .book-status-badges {
+    bottom: 6px;
+    left: 6px;
+    max-width: 75px;
+    gap: 3px;
+  } */
+
+  /* .status-badge {
+    padding: 2px 4px;
+    font-size: 0.6rem;
+    border-radius: 10px;
+    min-height: 16px;
+    max-width: 75px;
+  } */
+}
+
+@media (max-width: 576px) {
+  .book-image-container {
+    height: 200px;
+  }
+  
+  .book-info {
+    padding: 0.75rem;
+  }
+  
+  .book-title {
+    font-size: 1rem;
+  }
+
+  /* .book-status-badges {
+    bottom: 4px;
+    left: 4px;
+    max-width: 65px;
+    gap: 2px;
+  } */
+
+  /* .status-badge {
+    padding: 1px 3px;
+    font-size: 0.55rem;
+    border-radius: 8px;
+    min-height: 14px;
+    max-width: 65px;
+  } */
+}

@@ -1,0 +1,127 @@
+.register-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.register-left {
+  flex: 1;
+  background-color: #1a73e8;
+  color: white;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.register-left h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.features {
+  margin-top: 3rem;
+}
+
+.feature-item {
+  margin-bottom: 2rem;
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.register-right {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 480px;
+}
+
+.register-right h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.terms-checkbox {
+  margin-bottom: 1.5rem;
+}
+
+.terms-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terms-checkbox a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.register-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.register-button:hover {
+  background-color: #1557b0;
+}
+
+.login-prompt {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.login-prompt a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.error-message {
+  background-color: #fdeded;
+  color: #5f2120;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    flex-direction: column;
+  }
+  
+  .register-left,
+  .register-right {
+    max-width: 100%;
+    padding: 2rem;
+  }
+}
