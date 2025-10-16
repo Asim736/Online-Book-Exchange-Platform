@@ -159,3 +159,44 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 >>>>>>> 65b7a0b0778ab210893a1bf1f0eb9b3b8b652a6d
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+server/.env
+client/.env
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Coverage and test output
+coverage/
+*.lcov
+
+# React/Vite specific
+client/.vite/
+client/.next/
+client/out/
+client/.cache/
