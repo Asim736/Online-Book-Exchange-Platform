@@ -72,7 +72,7 @@ Add the following variables:
 MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/bookexchange?retryWrites=true&w=majority
 
 # JWT Secret (generate a strong secret)
-JWT_SECRET=***REMOVED***
+JWT_SECRET=<JWT_SECRET>
 
 # Server Configuration
 PORT=5001
