@@ -32,7 +32,7 @@ pip install git-filter-repo
 
 # Create a file with secrets to replace
 echo "your-actual-secret" > secrets-to-remove.txt
-echo "mongodb+srv://realuser:realpass@cluster" >> secrets-to-remove.txt
+echo "mongodb+srv://<ACTUAL-USER>:<ACTUAL-PASS>@<CLUSTER>" >> secrets-to-remove.txt
 
 # Run filter-repo to replace secrets with ***REMOVED***
 git filter-repo --replace-text secrets-to-remove.txt --force
@@ -102,7 +102,7 @@ git push origin backup-before-cleanup
 **Local Development:**
 ```bash
 # server/.env (NEVER commit this file)
-MONGODB_URI=mongodb+srv://realuser:realpass@cluster.mongodb.net/bookexchange
+MONGODB_URI=mongodb+srv://<YOUR-USER>:<YOUR-PASS>@<YOUR-CLUSTER>.mongodb.net/bookexchange
 JWT_SECRET=your-actual-super-secure-64-character-jwt-secret-here-12345
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=actual-secret-key
@@ -111,12 +111,12 @@ AWS_SECRET_ACCESS_KEY=actual-secret-key
 **Production (AWS EC2):**
 ```bash
 # Set environment variables on EC2
-export MONGODB_URI="mongodb+srv://produser:prodpass@cluster.mongodb.net/bookexchange"
+export MONGODB_URI="mongodb+srv://<PROD-USER>:<PROD-PASS>@<YOUR-CLUSTER>.mongodb.net/bookexchange"
 export JWT_SECRET="production-jwt-secret-64-characters-minimum-length-required"
 export NODE_ENV="production"
 
 # Or use AWS Systems Manager Parameter Store
-aws ssm put-parameter --name "/bookexchange/mongodb-uri" --value "mongodb+srv://..." --type "SecureString"
+aws ssm put-parameter --name "/bookexchange/mongodb-uri" --value "mongodb+srv://<USER>:<PASS>@<CLUSTER>.mongodb.net/db" --type "SecureString"
 aws ssm put-parameter --name "/bookexchange/jwt-secret" --value "your-jwt-secret" --type "SecureString"
 ```
 
