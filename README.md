@@ -190,7 +190,7 @@ cd client && npm run dev   ```
 
 5. Start the server:
 
-*[Add your deployed application URL here after deployment]*   ```
+*[coming soon (working on it)]*   ```
 
    node app.js
 
@@ -219,7 +219,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
+- GitHub: [Asim736](https://github.com/Asim736)
 
 ---
 
