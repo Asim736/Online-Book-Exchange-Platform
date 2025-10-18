@@ -32,7 +32,7 @@ pip install git-filter-repo
 
 # Create a file with secrets to replace
 echo "your-actual-secret" > secrets-to-remove.txt
-echo "mongodb+srv://<ACTUAL-USER>:<ACTUAL-PASS>@<CLUSTER>" >> secrets-to-remove.txt
+echo "your-actual-mongodb-connection-string" >> secrets-to-remove.txt
 
 # Run filter-repo to replace secrets with ***REMOVED***
 git filter-repo --replace-text secrets-to-remove.txt --force
@@ -102,7 +102,8 @@ git push origin backup-before-cleanup
 **Local Development:**
 ```bash
 # server/.env (NEVER commit this file)
-MONGODB_URI=mongodb+srv://<YOUR-USER>:<YOUR-PASS>@<YOUR-CLUSTER>.mongodb.net/bookexchange
+# Format: mongodb+srv://[USERNAME]:[PASSWORD]@[CLUSTER].mongodb.net/[DATABASE]
+MONGODB_URI=your-actual-mongodb-atlas-connection-string-here
 JWT_SECRET=your-actual-super-secure-64-character-jwt-secret-here-12345
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=actual-secret-key
@@ -111,13 +112,14 @@ AWS_SECRET_ACCESS_KEY=actual-secret-key
 **Production (AWS EC2):**
 ```bash
 # Set environment variables on EC2
-export MONGODB_URI="mongodb+srv://<PROD-USER>:<PROD-PASS>@<YOUR-CLUSTER>.mongodb.net/bookexchange"
+# Get your actual MongoDB Atlas connection string from Atlas dashboard
+export MONGODB_URI="your-mongodb-atlas-connection-string"
 export JWT_SECRET="production-jwt-secret-64-characters-minimum-length-required"
 export NODE_ENV="production"
 
 # Or use AWS Systems Manager Parameter Store
-aws ssm put-parameter --name "/bookexchange/mongodb-uri" --value "mongodb+srv://<USER>:<PASS>@<CLUSTER>.mongodb.net/db" --type "SecureString"
-aws ssm put-parameter --name "/bookexchange/jwt-secret" --value "your-jwt-secret" --type "SecureString"
+aws ssm put-parameter --name "/bookexchange/mongodb-uri" --value "YOUR_MONGODB_CONNECTION_STRING" --type "SecureString"
+aws ssm put-parameter --name "/bookexchange/jwt-secret" --value "YOUR_JWT_SECRET" --type "SecureString"
 ```
 
 ### 2. **Proper .gitignore Configuration**
@@ -139,8 +141,8 @@ client/.env
 
 **server/.env.example:**
 ```bash
-# Database
-MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/bookexchange
+# Database (Get from MongoDB Atlas Dashboard)
+MONGODB_URI=<YOUR_MONGODB_CONNECTION_STRING>
 
 # JWT Secret (generate 64+ character random string)
 JWT_SECRET=<JWT_SECRET>
