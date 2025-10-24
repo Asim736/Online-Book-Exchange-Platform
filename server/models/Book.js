@@ -51,4 +51,7 @@ const bookSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Compound index for search performance
+bookSchema.index({ title: 1, author: 1, genre: 1, location: 1 });
+
 export default mongoose.model('Book', bookSchema);

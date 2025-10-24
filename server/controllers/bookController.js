@@ -1,14 +1,60 @@
+// Fetch multiple books by array of IDs (for wishlist)
+export const getBooksByIds = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'No book IDs provided' });
+    }
+    const books = await Book.find({ _id: { $in: ids } })
+      .populate('owner', 'username email avatar bio');
+    res.status(200).json(books);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching wishlist books', error: error.message });
+  }
+};
 import Book from '../models/Book.js';
 import User from '../models/User.js';
 
 // Example usage
 export const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find()
-      .populate('owner', 'username email avatar bio')
-      .sort({ createdAt: -1 });
-    
-    res.status(200).json(books);
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 12;
+    const skip = (page - 1) * limit;
+
+    // Filtering params
+  const filter = {};
+  // Only show available books by default
+  filter.status = 'available';
+  if (req.query.title) filter.title = { $regex: req.query.title, $options: 'i' };
+  if (req.query.author) filter.author = { $regex: req.query.author, $options: 'i' };
+  if (req.query.genre) filter.genre = req.query.genre;
+  if (req.query.location) filter.location = { $regex: req.query.location, $options: 'i' };
+
+    // Log query start
+    const start = Date.now();
+
+    const [books, total] = await Promise.all([
+      Book.find(filter)
+        .select('title author genre location images owner status createdAt')
+        .populate('owner', 'username avatar')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Book.countDocuments(filter)
+    ]);
+
+    // Log query end
+    const duration = Date.now() - start;
+    console.log(`[BOOKS] Query took ${duration}ms | Filter:`, filter);
+
+    res.status(200).json({
+      books,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
   } catch (error) {
     console.error('Error fetching books:', error);
     res.status(500).json({ 
@@ -134,33 +180,35 @@ export const deleteBook = async (req, res) => {
 // Get user's own books
 export const getUserBooks = async (req, res) => {
   try {
-    console.log('getUserBooks called');
-    console.log('User from req:', req.user);
-    
     if (!req.user?._id) {
-      console.log('No user ID found in request');
-      return res.status(401).json({ 
-        message: 'Authentication required' 
-      });
+      return res.status(401).json({ message: 'Authentication required' });
     }
 
-    console.log('Searching for books with owner:', req.user._id);
-    const books = await Book.find({ owner: req.user._id })
-      .sort({ createdAt: -1 })
-      .select('-__v');
-    
-    console.log('Found books:', books.length);
-    
-    res.status(200).json({ 
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    // Query for user's books
+    const [books, total] = await Promise.all([
+      Book.find({ owner: req.user._id })
+        .sort({ createdAt: -1 })
+        .select('-__v')
+        .skip(skip)
+        .limit(limit),
+      Book.countDocuments({ owner: req.user._id })
+    ]);
+
+    res.status(200).json({
       books,
-      count: books.length
+      total,
+      page,
+      pages: Math.ceil(total / limit)
     });
   } catch (error) {
-    console.error('Error fetching user books:', error);
-    console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Error fetching user books', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Error fetching user books',
+      error: error.message
     });
   }
 };

@@ -34,10 +34,26 @@ export const getRequestsForUser = async (req, res) => {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    // Find all requests where ownerId matches
-    const requests = await Request.find({ owner: ownerId }).populate("book").populate("requester");
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
-    res.json(requests);
+    // Find all requests where user is the owner (books they own)
+    const total = await Request.countDocuments({ owner: ownerId });
+    const requests = await Request.find({ owner: ownerId })
+      .populate('book', 'title images')
+      .populate('requester', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      requests,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
   } catch (error) {
     console.error("Error fetching requests:", error);
     res.status(500).json({ error: "Server error" });
@@ -85,10 +101,14 @@ export const updateRequestStatus = async (req, res) => {
 export const getConversationsForUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
     }
+
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
     // Find all requests where user is either owner or requester
     const requests = await Request.find({
@@ -123,7 +143,6 @@ export const getConversationsForUser = async (req, res) => {
           unreadCount: 0 // We'll implement this later
         });
       } else {
-        // Update if this request is more recent
         const existing = conversationsMap.get(participantId);
         if (request.createdAt > existing.lastMessageTime) {
           existing.lastMessage = request.message || `Book Request: "${request.book.title}"`;
@@ -134,10 +153,16 @@ export const getConversationsForUser = async (req, res) => {
         }
       }
     });
+    const allConversations = Array.from(conversationsMap.values());
+    const total = allConversations.length;
+    const paginatedConversations = allConversations.slice(skip, skip + limit);
 
-    const conversations = Array.from(conversationsMap.values());
-    res.json(conversations);
-    
+    res.json({
+      conversations: paginatedConversations,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
   } catch (error) {
     console.error("Error fetching conversations:", error);
     res.status(500).json({ error: "Server error" });

@@ -1,4 +1,5 @@
 import express from 'express';
+const router = express.Router();
 import { authenticateToken } from '../middleware/auth.js';
 import { 
     getAllBooks, 
@@ -6,10 +7,11 @@ import {
     createBook, 
     updateBook, 
     deleteBook,
-    getUserBooks
+    getUserBooks,
+    getBooksByIds
 } from '../controllers/bookController.js';
-
-const router = express.Router();
+// Bulk fetch books by IDs (for wishlist)
+router.post('/bulk', getBooksByIds);
 
 // Public routes
 router.get('/', getAllBooks);
