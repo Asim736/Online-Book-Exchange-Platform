@@ -20,6 +20,7 @@
     "multer": "^2.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
@@ -30,7 +31,13 @@
     "vite": "^6.3.5"
   },
   "main": "src/main.jsx",
-  "keywords": ["book-exchange", "react", "vite", "frontend", "mern-stack"],
+  "keywords": [
+    "book-exchange",
+    "react",
+    "vite",
+    "frontend",
+    "mern-stack"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "description": "Book Exchange Platform - React Frontend",

@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/constants.js';
 import BookCard from './BookCard';
+import { SkeletonCardGrid } from '../common/SkeletonCard';
 import './styles/BookList.css';
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalBooks, setTotalBooks] = useState(0);
+  const LIMIT = 12;
   
   // Compact search bar state
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +56,9 @@ const BookList = () => {
     }
   };
 
+
   useEffect(() => {
-    fetchBooks();
+    fetchBooks(1, true);
   }, []);
 
   // Handle global clicks to close dropdowns
@@ -77,19 +82,33 @@ const BookList = () => {
     return () => document.removeEventListener('click', handleGlobalClick, true);
   }, []);
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (fetchPage = 1, reset = false) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/books`);
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/books?page=${fetchPage}&limit=${LIMIT}`);
       if (!response.ok) {
         throw new Error('Failed to fetch books');
       }
       const data = await response.json();
-      setBooks(data);
+      // If backend returns { books, total, page, pages }
+      const booksArray = Array.isArray(data.books) ? data.books : (Array.isArray(data) ? data : []);
+      setBooks(reset ? booksArray : prev => [...prev, ...booksArray]);
+      setPage(data.page || fetchPage);
+      setTotalPages(data.pages || 1);
+      setTotalBooks(data.total || booksArray.length);
     } catch (error) {
       console.error('Error fetching books:', error);
       setError(error.message);
+      setBooks([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMoreBooks = () => {
+    if (page < totalPages) {
+      fetchBooks(page + 1, false);
     }
   };
 
@@ -157,7 +176,7 @@ const BookList = () => {
     setShowSuggestions(false);
   };
 
-  const filteredBooks = books.filter(book => {
+  const filteredBooks = Array.isArray(books) ? books.filter(book => {
     // If no search query, show all books
     if (!searchQuery.trim()) {
       return true;
@@ -184,10 +203,16 @@ const BookList = () => {
         return (book.title && book.title.toLowerCase().includes(query)) ||
                (book.author && book.author.toLowerCase().includes(query));
     }
-  });
+  }) : [];
 
-  if (loading) return <div>Loading books...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return (
+    <div className="book-list-container">
+      <div className="error-message">
+        <p>Error loading books: {error}</p>
+        <button onClick={() => { setError(null); fetchBooks(); }}>Try Again</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="book-list-container">
@@ -201,7 +226,6 @@ const BookList = () => {
               ref={contextButtonRef}
               className="context-selector-btn"
               onClick={(e) => {
-                console.log('Button clicked!'); // Debug log
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -209,17 +233,13 @@ const BookList = () => {
                 if (contextButtonRef.current) {
                   const rect = contextButtonRef.current.getBoundingClientRect();
                   const position = {
-                    top: rect.bottom + 8, // 8px margin
+                    top: rect.bottom + 8,
                     left: rect.left
                   };
-                  console.log('Setting menu position:', position); // Debug log
                   setMenuPosition(position);
                 }
                 
-                setShowContextMenu(prev => {
-                  console.log('Toggling menu from', prev, 'to', !prev); // Debug log
-                  return !prev;
-                });
+                setShowContextMenu(prev => !prev);
               }}
               aria-label="Select search context"
             >
@@ -264,7 +284,7 @@ const BookList = () => {
               className="search-submit-btn"
               aria-label="Search"
             >
-              🔍
+              <span style={{ fontSize: '24px', fontWeight: 'normal', color: '#64748b' }}>⌕</span>
             </button>
           </div>
           
@@ -291,10 +311,23 @@ const BookList = () => {
 
       {/* Books Grid */}
       <div className="books-grid">
-        {filteredBooks.length > 0 ? (
-          filteredBooks.map(book => (
-            <BookCard key={book._id} book={book} />
-          ))
+        {loading && books.length === 0 ? (
+          <SkeletonCardGrid count={6} />
+        ) : filteredBooks.length > 0 ? (
+          <>
+            {filteredBooks.map((book, index) => (
+              <BookCard 
+                key={book._id} 
+                book={book} 
+                priority={index < 3} // Priority load for first 3 cards
+              />
+            ))}
+            {page < totalPages && (
+              <div style={{ textAlign: 'center', marginTop: 16 }}>
+                <button onClick={loadMoreBooks} className="btn-primary">Load More</button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="no-books-message">
             <p>No books found matching your criteria.</p>

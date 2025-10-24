@@ -33,12 +33,22 @@
 }
 
 /* Modern Square Image Container */
+.square-image-container {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
 .square-image-container:hover .zoom-indicator {
   opacity: 1 !important;
 }
 
 .square-image-container:hover .modern-overlay {
   opacity: 1 !important;
+}
+
+.modern-square-book-image {
+  contain: layout style paint;
+  aspect-ratio: 1 / 1;
 }
 
 .modern-nav-arrow:hover {
@@ -1545,46 +1555,103 @@ textarea::placeholder {
 /* Mobile portrait */
 @media (max-width: 576px) {
   div.card div.row div.col-md-5.amazon-image-section {
-    padding: 15px 10px !important;
-    margin-bottom: 10px !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+    min-width: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
-  
+  div.amazon-image-section div.amazon-image-container {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
   div.amazon-image-section div.main-image-wrapper {
-    max-width: 280px !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    margin-bottom: 0 !important;
+    width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
-  
   div.amazon-image-section div.main-image-container {
-    padding: 15px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    min-width: 0 !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
-  
-  /* Smaller thumbnails for small screens */
+  div.amazon-image-section img.main-book-image {
+    max-width: 100vw !important;
+    max-height: 60vw !important;
+    min-width: 0 !important;
+    border-radius: 0 !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    display: block !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+  /* Thumbnails full width and scrollable */
   div.amazon-image-section div.thumbnail-gallery-container {
-    max-width: 280px !important;
-    padding: 10px 6px !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    padding: 6px 0 !important;
+    margin: 0 auto !important;
+    border-radius: 10px !important;
+    min-width: 0 !important;
   }
-  
   div.amazon-image-section div.thumbnail-gallery {
-    gap: 6px !important;
+    gap: 4px !important;
+    padding: 0 2vw !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+    width: 100vw !important;
+    min-width: 0 !important;
   }
-  
+  div.amazon-image-section div.thumbnail-gallery::-webkit-scrollbar {
+    display: none !important;
+  }
   div.amazon-image-section div.thumbnail-item {
-    width: 44px !important;
-    height: 56px !important;
-  }
-  
-  /* Smaller navigation for very small screens */
-  div.amazon-image-section .image-nav-arrow {
     width: 38px !important;
-    height: 38px !important;
-    font-size: 20px !important;
+    height: 48px !important;
+    border-radius: 6px !important;
+    flex-shrink: 0 !important;
   }
-  
+  /* Navigation arrows */
+  div.amazon-image-section .image-nav-arrow {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+    top: 45% !important;
+  }
   div.amazon-image-section .prev-arrow {
-    left: 6px !important;
+    left: 2px !important;
   }
-  
   div.amazon-image-section .next-arrow {
+    right: 2px !important;
+  }
+  /* Zoom indicator and image counter */
+  div.amazon-image-section .zoom-indicator {
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+    border-radius: 12px !important;
+    top: 6px !important;
     right: 6px !important;
+  }
+  div.amazon-image-section .image-counter {
+    margin-top: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    border-radius: 12px !important;
   }
 }
 

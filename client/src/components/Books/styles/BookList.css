@@ -976,7 +976,7 @@
     0 8px 25px rgba(0, 0, 0, 0.12),
     0 4px 10px rgba(59, 130, 246, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  z-index: 1000;
+  z-index: 1001; /* Higher than book cards to ensure proper layering */
   max-height: 220px;
   overflow-y: auto;
   
@@ -1303,44 +1303,41 @@
   margin: 0 0 2rem 0;
   padding: 0 20px;
   position: relative;
-  /* Removed z-index to prevent overlap with header */
+  z-index: 1000; /* Establish stacking context for search bar and dropdowns */
 }
 
 .compact-search-bar {
   position: relative;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border: 1.5px solid #e1e7ef;
+  border: 1.5px solid #e1e7ef !important;
   border-radius: 50px;
-  overflow: visible; /* Changed from hidden to visible to show dropdown */
+  overflow: visible;
   box-shadow: 
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 10px 25px -5px rgba(59, 130, 246, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none !important;
+  min-height: 56px;
+  outline: none !important;
   
   /* Modern font system */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .compact-search-bar:focus-within {
-  border-color: #3b82f6;
+  outline: none !important;
+  border: 1.5px solid #e1e7ef !important;
   box-shadow: 
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 10px 25px -5px rgba(59, 130, 246, 0.15),
-    0 0 0 4px rgba(59, 130, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transform: translateY(-1px);
+    0 10px 25px -5px rgba(59, 130, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .compact-search-bar:hover {
-  border-color: #cbd5e0;
-  box-shadow: 
-    0 6px 8px -2px rgba(0, 0, 0, 0.08),
-    0 12px 30px -5px rgba(59, 130, 246, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border-color: #e1e7ef !important;
 }
 
 /* Context Selector */
@@ -1355,15 +1352,17 @@
 .context-selector-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 14px 18px;
+  padding: 0 18px;
   background: rgba(59, 130, 246, 0.08);
   border: none;
   border-right: 1px solid rgba(226, 232, 240, 0.8);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 56px;
+  height: 100%;
   min-width: 70px;
+  border-radius: 50px 0 0 50px;
   
   /* Modern styling */
   font-size: 0.9rem;
@@ -1487,18 +1486,25 @@
 .compact-search-input {
   flex: 1;
   padding: 16px 120px 16px 20px;
-  border: none;
+  border: none !important;
   background: transparent;
   font-size: 0.95rem;
   font-weight: 400;
   color: #1e293b;
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
   
   /* Modern typography */
   font-family: inherit;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.compact-search-input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .compact-search-input::placeholder {
@@ -1534,10 +1540,11 @@
 }
 
 .clear-search-btn {
-  right: 70px;
+  right: 66px;
   width: 32px;
   height: 32px;
   padding: 0;
+  border-radius: 50%;
 }
 
 .clear-search-btn:hover {
@@ -1548,23 +1555,33 @@
 }
 
 .search-submit-btn {
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  background: transparent;
   border: none;
-  color: white;
-  box-shadow: 
-    0 2px 4px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: #64748b;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  transition: all 0.25s ease;
+}
+
+.search-submit-btn > * {
+  pointer-events: none;
 }
 
 .search-submit-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-50%) translateY(-1px) scale(1.05);
-  box-shadow: 
-    0 4px 8px rgba(59, 130, 246, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .search-submit-btn:active {
@@ -1585,7 +1602,7 @@
     0 8px 25px rgba(0, 0, 0, 0.12),
     0 4px 10px rgba(59, 130, 246, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  z-index: 999;
+  z-index: 1001; /* Higher than book cards to ensure proper layering */
   max-height: 280px;
   overflow-y: auto;
   
@@ -1674,9 +1691,10 @@
   }
   
   .context-selector-btn {
-    padding: 12px 14px;
-    height: 52px;
+    padding: 0 14px;
+    height: 100%;
     min-width: 60px;
+    border-radius: 28px 0 0 28px;
   }
   
   .compact-search-input {
@@ -1685,15 +1703,22 @@
   }
   
   .clear-search-btn {
-    right: 65px;
+    right: 58px;
     width: 30px;
     height: 30px;
   }
   
   .search-submit-btn {
-    right: 12px;
-    width: 36px;
-    height: 36px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .search-submit-btn span {
+    font-size: 22px;
   }
   
   .context-menu {
@@ -1713,12 +1738,14 @@
   
   .compact-search-bar {
     border-radius: 24px;
+    min-height: 48px;
   }
   
   .context-selector-btn {
-    padding: 10px 12px;
-    height: 48px;
+    padding: 0 12px;
+    height: 100%;
     min-width: 55px;
+    border-radius: 24px 0 0 24px;
   }
   
   .context-icon {
@@ -1730,14 +1757,21 @@
   }
   
   .clear-search-btn {
-    right: 60px;
+    right: 54px;
     width: 28px;
     height: 28px;
   }
   
   .search-submit-btn {
-    right: 10px;
-    width: 34px;
-    height: 34px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .search-submit-btn span {
+    font-size: 20px;
   }
 }

@@ -15,6 +15,15 @@
   box-sizing: border-box;
 }
 
+/* Force font to load immediately to prevent CLS from font swapping */
+@font-face {
+  font-family: 'Inter';
+  src: local('Inter'), local('Inter-Regular'), url('/fonts/Inter.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 body {
   background: var(--background);
   color: var(--text-primary);
@@ -24,18 +33,25 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent layout shifts */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Prevent layout shifts in root */
+  isolation: isolate;
 }
 
 .app {
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* Prevent CLS from dynamic content */
+  min-height: 100vh;
 }
 
 .main-content {
@@ -44,6 +60,8 @@ body {
   max-width: 100%;
   margin: 0;
   width: 100%;
+  /* Prevent content jump */
+  contain: layout style;
 }
 
 .container {

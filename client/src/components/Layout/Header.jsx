@@ -57,7 +57,7 @@ const Header = () => {
             <li><div onClick={() => handleNavigation('/browse')} className="nav-link">Explore</div></li>
             {user ? (
               <>
-                <li><div onClick={() => handleNavigation('/upload')} className="nav-link">My Books</div></li>
+                <li><div onClick={() => handleNavigation('/upload')} className="nav-link">List Book</div></li>
                 <li><div onClick={() => handleNavigation('/wishlist')} className="nav-link">Wishlist</div></li>
                 <li><div onClick={() => handleNavigation('/inbox')} className="nav-link">Inbox</div></li>
               </>
@@ -105,7 +105,7 @@ const Header = () => {
                 <li><div onClick={() => handleNavigation('/browse')} className="mobile-nav-link">Explore</div></li>
                 {user ? (
                   <>
-                    <li><div onClick={() => handleNavigation('/upload')} className="mobile-nav-link">My Books</div></li>
+                    <li><div onClick={() => handleNavigation('/upload')} className="mobile-nav-link">List Book</div></li>
                     <li><div onClick={() => handleNavigation('/wishlist')} className="mobile-nav-link">Wishlist</div></li>
                     <li><div onClick={() => handleNavigation('/inbox')} className="mobile-nav-link">Inbox</div></li>
                   </>

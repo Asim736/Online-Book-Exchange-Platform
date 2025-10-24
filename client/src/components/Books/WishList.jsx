@@ -23,35 +23,42 @@ const WishList = () => {
     localStorage.setItem(`wishlist_${user._id}`, JSON.stringify(bookIds));
   };
 
-  // Fetch books from API and filter wishlist
+  // Fetch books from API using /books/bulk for wishlist
   const fetchWishlistBooks = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Get all books from API
-      const response = await fetch(`${API_BASE_URL}/books`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch books');
-      }
-      
-      const allBooks = await response.json();
       const wishlistIds = getStoredWishlist();
-      
-      // Filter books that are in wishlist and not owned by current user
-      const filteredBooks = allBooks.filter(book => 
-        wishlistIds.includes(book._id) && 
-        book.owner?._id !== user?._id
-      ).map(book => ({
-        _id: book._id,
-        title: book.title,
-        author: book.author,
-        owner: book.owner,
-        condition: book.condition,
-        location: book.location,
-        cover: book.images?.[0] || getDefaultBookCover(book.title)
-      }));
+      if (!wishlistIds.length) {
+        setWishlistBooks([]);
+        setLoading(false);
+        return;
+      }
 
+      const response = await fetch(`${API_BASE_URL}/books/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ ids: wishlistIds }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch wishlist books');
+      }
+      const books = await response.json();
+      // Filter out books owned by current user
+      const filteredBooks = books.filter(book => book.owner?._id !== user?._id)
+        .map(book => ({
+          _id: book._id,
+          title: book.title,
+          author: book.author,
+          owner: book.owner,
+          condition: book.condition,
+          location: book.location,
+          cover: book.images?.[0] || getDefaultBookCover(book.title)
+        }));
       setWishlistBooks(filteredBooks);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -119,14 +126,27 @@ const WishList = () => {
   }
 
   if (loading) {
+    // Show skeleton cards in a grid matching the wishlist layout
+    const skeletonCards = Array.from({ length: 6 }).map((_, idx) => (
+      <div className="book-card skeleton-card" key={idx}>
+        <div className="book-cover skeleton-img" />
+        <div className="book-info" style={{ width: '100%' }}>
+          <div className="skeleton-line" style={{ width: '70%', height: 16, marginBottom: 8 }} />
+          <div className="skeleton-line" style={{ width: '50%', height: 12, marginBottom: 8 }} />
+          <div className="skeleton-line" style={{ width: '90%', height: 10, marginBottom: 4 }} />
+          <div className="skeleton-line" style={{ width: '60%', height: 10, marginBottom: 4 }} />
+          <div className="skeleton-line" style={{ width: '40%', height: 10 }} />
+        </div>
+      </div>
+    ));
     return (
       <div className="wishlist-page">
         <div className="wishlist-container">
           <div className="wishlist-header">
             <h1>My Wishlist</h1>
           </div>
-          <div className="loading-state">
-            <p>Loading your wishlist...</p>
+          <div className="wishlist-content">
+            {skeletonCards}
           </div>
         </div>
       </div>

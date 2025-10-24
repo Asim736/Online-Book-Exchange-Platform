@@ -311,10 +311,13 @@
 
 .book-cover {
   width: 60px;
-  height: 80px;
+  height: 90px;
+  aspect-ratio: 2/3;
   object-fit: cover;
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #f3f3f3;
+  display: block;
 }
 
 .book-details {

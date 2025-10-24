@@ -3,7 +3,42 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_BASE_URL } from '../../config/constants.js';
 import { Image } from 'lucide-react';
+import AutoCompleteInput from '../common/AutoCompleteInput';
 import './styles/BookUpload.css';
+
+// Suggestion lists for autocomplete
+const genreSuggestions = [
+  'Fiction',
+  'Non-Fiction',
+  'Mystery',
+  'Science Fiction',
+  'Romance',
+  'Thriller',
+  'Self-Help',
+  'Biography',
+  'Fantasy',
+  'Historical Fiction',
+  'Horror',
+  'Poetry',
+  'Drama',
+  'Adventure',
+  'Young Adult',
+  'Children',
+  'Graphic Novel',
+  'Memoir',
+  'True Crime',
+  'Philosophy'
+];
+
+const conditionSuggestions = [
+  'New',
+  'Like New',
+  'Very Good',
+  'Good',
+  'Acceptable',
+  'Fair',
+  'Poor'
+];
 
 const BookUpload = () => {
   const navigate = useNavigate();
@@ -14,7 +49,7 @@ const BookUpload = () => {
     title: '',
     author: '',
     genre: '',
-    condition: 'new',
+    condition: '',
     location: '',
     description: '',
     externalUrls: [''],
@@ -63,7 +98,7 @@ const BookUpload = () => {
         title: book.title || '',
         author: book.author || '',
         genre: book.genre || '',
-        condition: book.condition || 'new',
+        condition: book.condition || '',
         location: book.location || '',
         description: book.description || '',
         externalUrls: book.externalUrls && book.externalUrls.length > 0 ? book.externalUrls : [''],
@@ -297,41 +332,27 @@ const BookUpload = () => {
         {/* Genre & Condition Side by Side */}
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="genre" className="form-label">Genre</label>
-            <select
-              id="genre"
+            <AutoCompleteInput
+              label="Genre"
               name="genre"
               value={bookData.genre}
               onChange={handleChange}
+              suggestions={genreSuggestions}
+              placeholder="Enter or select genre"
               required
-            >
-              <option value="">Select a genre</option>
-              <option value="fiction">Fiction</option>
-              <option value="non-fiction">Non-Fiction</option>
-              <option value="mystery">Mystery</option>
-              <option value="sci-fi">Science Fiction</option>
-              <option value="romance">Romance</option>
-              <option value="thriller">Thriller</option>
-              <option value="self-help">Self-Help</option>
-            </select>
+            />
           </div>
 
           <div className="form-group">
-            <label htmlFor="condition" className="form-label">Condition</label>
-            <select
-              id="condition"
+            <AutoCompleteInput
+              label="Condition"
               name="condition"
               value={bookData.condition}
               onChange={handleChange}
+              suggestions={conditionSuggestions}
+              placeholder="Enter or select condition"
               required
-            >
-              <option value="">Select condition</option>
-              <option value="new">New</option>
-              <option value="like-new">Like New</option>
-              <option value="good">Good</option>
-              <option value="fair">Fair</option>
-              <option value="poor">Poor</option>
-            </select>
+            />
           </div>
         </div>
 

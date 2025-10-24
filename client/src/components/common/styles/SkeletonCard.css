@@ -1,0 +1,101 @@
+/* Skeleton Card Styles - Matches BookCard dimensions exactly */
+
+.skeleton-card {
+    pointer-events: none;
+    cursor: default;
+    min-height: 450px !important; /* Fixed height to prevent layout shift */
+    height: auto !important;
+    /* Prevent CLS from skeleton cards */
+    contain: layout style paint;
+}
+
+.skeleton-card .book-image-container {
+    height: 320px !important; /* Fixed image container height */
+    background-color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
+    /* Prevent image shift */
+    aspect-ratio: 1 / 1;
+    min-height: 320px;
+}
+
+.skeleton-card .book-info {
+    padding: 1.5rem !important;
+    min-height: 130px !important;
+    /* Prevent text layout shifts */
+    contain: layout style;
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(
+        90deg,
+        #e0e0e0 0%,
+        #f0f0f0 20%,
+        #e0e0e0 40%,
+        #e0e0e0 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-title {
+    height: 24px;
+    width: 80%;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+}
+
+.skeleton-author {
+    height: 16px;
+    width: 60%;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+}
+
+.skeleton-tag {
+    height: 24px;
+    width: 80px;
+    border-radius: 12px;
+    background-color: #e0e0e0;
+    display: inline-block;
+}
+
+/* Accessibility: Hide from screen readers
+   Note: set aria-hidden="true" in your JSX/HTML to hide it from assistive technologies.
+   This stylesheet intentionally does not apply visual styles to the aria-hidden selector
+   to avoid changing layout or accessibility behavior; keep the selector in markup
+   if you need to target it later with styles. */
+
+/* Responsive matching BookCard */
+@media (max-width: 768px) {
+    .skeleton-card {
+        min-height: 410px !important;
+    }
+    
+    .skeleton-card .book-image-container {
+        height: 280px !important;
+        min-height: 280px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .skeleton-card {
+        min-height: 370px !important;
+    }
+    
+    .skeleton-card .book-image-container {
+        height: 240px !important;
+        min-height: 240px !important;
+    }
+}

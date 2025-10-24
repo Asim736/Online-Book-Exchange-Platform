@@ -6,6 +6,9 @@
   z-index: 100;
   width: 100%;
   box-sizing: border-box;
+  /* Prevent CLS from sticky header */
+  min-height: 70px;
+  contain: layout style;
 }
 
 .header-container {
@@ -17,6 +20,8 @@
   margin: 0;
   box-sizing: border-box;
   width: 100%;
+  /* Prevent layout shift */
+  min-height: 70px;
 }
 
 .logo-container {

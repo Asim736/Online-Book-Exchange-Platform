@@ -378,18 +378,195 @@ const BookDetail = () => {
 
   const isOwner = user?._id === book?.owner?._id;
 
-  if (loading) {
-    return (
-      <div className="min-vh-100 bg-light d-flex align-items-center justify-content-center">
-        <div className="text-center">
-          <div className="spinner-border text-success mb-3" role="status">
-            <span className="visually-hidden">Loading...</span>
+
+    if (loading) {
+      return (
+        <>
+          {/* Bootstrap CSS */}
+          <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+            rel="stylesheet" 
+            integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" 
+            crossOrigin="anonymous"
+          />
+          <div className="min-vh-100 bg-light py-4">
+            <div className="container-fluid">
+              {/* Breadcrumb Skeleton */}
+              <nav aria-label="breadcrumb" className="mb-4">
+                <ol className="breadcrumb">
+                  <li className="breadcrumb-item">
+                    <span style={{ width: 60, height: 18, display: 'inline-block', background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </li>
+                  <li className="breadcrumb-item">
+                    <span style={{ width: 40, height: 18, display: 'inline-block', background: '#f3f3f3', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </li>
+                  <li className="breadcrumb-item active">
+                    <span style={{ width: 80, height: 18, display: 'inline-block', background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </li>
+                </ol>
+              </nav>
+              <div className="card shadow-lg border-0">
+                <div className="row g-0">
+                  {/* Book Image Skeleton */}
+                  <div 
+                    className="col-md-5"
+                    style={{
+                      background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)',
+                      padding: '35px 25px',
+                      borderRadius: '24px',
+                      position: 'sticky',
+                      top: '20px',
+                      height: 'fit-content',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }}
+                  >
+                    <div 
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        maxWidth: '420px',
+                        margin: '0 auto'
+                      }}
+                    >
+                      <div 
+                        style={{
+                          position: 'relative',
+                          marginBottom: '25px',
+                          width: '350px',
+                          height: '350px',
+                          minWidth: '350px',
+                          minHeight: '350px',
+                          contain: 'layout size',
+                          borderRadius: '20px',
+                          background: '#e9ecef',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <div className="skeleton-wave" style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #f3f3f3 25%, #e9ecef 50%, #f3f3f3 75%)',
+                          animation: 'skeleton-wave 1.6s linear infinite'
+                        }} />
+                      </div>
+                      {/* Thumbnail gallery skeleton */}
+                      <div style={{ width: '100%', maxWidth: '380px', padding: '15px 10px', background: 'rgba(255,255,255,0.7)', borderRadius: '12px', marginTop: 16 }}>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', padding: '5px 0' }}>
+                          {[1,2,3].map((_, idx) => (
+                            <div key={idx} style={{ width: 60, height: 76, borderRadius: 8, background: '#e9ecef', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                          ))}
+                        </div>
+                        <div className="mobile-swipe-hint" aria-hidden="true">
+                          <small style={{ color: '#bbb' }}>Tap to view • Swipe to browse</small>
+                        </div>
+                      </div>
+                      <div className="image-counter" style={{ marginTop: 8, color: '#bbb', fontWeight: 500 }}>1 of 3</div>
+                    </div>
+                  </div>
+                  {/* Book Details Skeleton */}
+                  <div className="col-md-7">
+                    <div className="card-body p-4 p-md-5">
+                      <div className="display-4 fw-bold mb-2" style={{ width: '60%', height: 38, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      <div className="text-muted mb-4 fs-5" style={{ width: '40%', height: 24, background: '#f3f3f3', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      <div className="row mb-4">
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Genre</small>
+                          <div style={{ width: '60%', height: 18, background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Condition</small>
+                          <div style={{ width: '40%', height: 18, background: '#f3f3f3', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                      </div>
+                      <div className="row mb-4">
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Availability</small>
+                          <div style={{ width: '50%', height: 18, background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Location</small>
+                          <div style={{ width: '60%', height: 18, background: '#f3f3f3', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                      </div>
+                      <div className="row mb-4">
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Edition</small>
+                          <div style={{ width: '40%', height: 18, background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                        <div className="col-sm-6 mb-3">
+                          <small className="text-muted d-block">Language</small>
+                          <div style={{ width: '50%', height: 18, background: '#f3f3f3', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h5 className="fw-bold mb-3">Description</h5>
+                        <div style={{ width: '100%', height: 60, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      </div>
+                      {/* Owner Info Skeleton */}
+                      <div className="mb-4 p-3 bg-light rounded">
+                        <h5 className="fw-bold mb-3">Owner</h5>
+                        <div className="d-flex align-items-center">
+                          <div className="me-3">
+                            <div style={{ width: 50, height: 50, borderRadius: '50%', background: '#e9ecef', border: '2px solid #0dcaf0', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                          </div>
+                          <div>
+                            <div style={{ width: 90, height: 18, background: '#e9ecef', borderRadius: 6, marginBottom: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                            <div style={{ width: 60, height: 14, background: '#f3f3f3', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                          </div>
+                        </div>
+                      </div>
+                      {/* Action Buttons Skeleton */}
+                      <div className="d-flex flex-column flex-sm-row gap-3 mb-4">
+                        <div style={{ width: 180, height: 44, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        <div style={{ width: 180, height: 44, background: '#f3f3f3', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      </div>
+                      {/* Purchase Links Skeleton */}
+                      <div className="mb-4">
+                        <h5 className="fw-bold mb-3">Buy New Copy</h5>
+                        <div className="d-flex gap-2 flex-wrap">
+                          {[1,2].map((_, idx) => (
+                            <div key={idx} style={{ width: 120, height: 38, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                          ))}
+                        </div>
+                      </div>
+                      {/* Reviews Skeleton */}
+                      <div className="mb-4">
+                        <h5 className="fw-bold mb-3">Reviews</h5>
+                        <div className="mb-3">
+                          <div style={{ width: 120, height: 24, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        </div>
+                        <div className="border-bottom pb-3 mb-3">
+                          <div className="d-flex">
+                            <div style={{ width: 45, height: 45, borderRadius: '50%', background: '#e9ecef', marginRight: 12, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                            <div className="flex-grow-1">
+                              <div style={{ width: 120, height: 18, background: '#e9ecef', borderRadius: 6, marginBottom: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                              <div style={{ width: 80, height: 16, background: '#f3f3f3', borderRadius: 6, marginBottom: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                              <div style={{ width: '100%', height: 24, background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ width: 120, height: 24, background: '#f3f3f3', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-muted">Loading book details...</p>
-        </div>
-      </div>
-    );
-  }
+          {/* Skeleton animation keyframes */}
+          <style>{`
+            @keyframes skeleton-wave {
+              0% { background-position: -200px 0; }
+              100% { background-position: 200px 0; }
+            }
+          `}</style>
+        </>
+      );
+    }
 
   if (!book) {
     return (
@@ -473,7 +650,10 @@ const BookDetail = () => {
                     position: 'relative',
                     marginBottom: '25px',
                     width: '350px',
-                    height: '350px'
+                    height: '350px',
+                    minWidth: '350px',
+                    minHeight: '350px',
+                    contain: 'layout size'
                   }}
                 >
                   <div 
@@ -488,7 +668,9 @@ const BookDetail = () => {
                       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       overflow: 'hidden',
                       border: '3px solid rgba(255, 255, 255, 0.9)',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      contain: 'layout style paint',
+                      willChange: 'transform'
                     }}
                     onMouseEnter={(e) => {
                       if (e.target) {
@@ -544,6 +726,9 @@ const BookDetail = () => {
                         alt={book.title}
                         className="modern-square-book-image"
                         onClick={openZoomView}
+                        width="350"
+                        height="350"
+                        fetchpriority="high"
                         style={{
                           width: '100%',
                           height: '100%',
@@ -551,7 +736,8 @@ const BookDetail = () => {
                           cursor: 'pointer',
                           transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                           display: 'block',
-                          filter: 'contrast(1.05) saturate(1.1)'
+                          filter: 'contrast(1.05) saturate(1.1)',
+                          aspectRatio: '1 / 1'
                         }}
                         onMouseEnter={(e) => {
                           if (e.target) {

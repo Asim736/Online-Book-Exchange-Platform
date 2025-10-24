@@ -22,16 +22,17 @@ const UserProfile = () => {
   const [userBooks, setUserBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [booksPage, setBooksPage] = useState(1);
+  const [booksTotal, setBooksTotal] = useState(0);
+  const [booksPages, setBooksPages] = useState(1);
+  const BOOKS_LIMIT = 8;
   const [profileImage, setProfileImage] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-
   const [openSection, setOpenSection] = useState({
     accountSettings: true,
     editProfile: true,
     listedBooks: true
   });
-
-  // Load user profile data and books
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -48,10 +49,12 @@ const UserProfile = () => {
           });
         }
 
-        // Fetch user's books
-        const booksResponse = await axios.get('/books/my-books');
+        // Fetch user's books (paginated)
+        const booksResponse = await axios.get(`/books/my-books?page=1&limit=${BOOKS_LIMIT}`);
         setUserBooks(booksResponse.data.books || []);
-        
+        setBooksTotal(booksResponse.data.total || 0);
+        setBooksPages(booksResponse.data.pages || 1);
+        setBooksPage(1);
       } catch (error) {
         console.error('Error fetching user data:', error);
         // Set fallback data if user exists in auth context
@@ -65,6 +68,9 @@ const UserProfile = () => {
         }
         // Set empty books array on error
         setUserBooks([]);
+        setBooksTotal(0);
+        setBooksPages(1);
+        setBooksPage(1);
       } finally {
         setLoading(false);
         setProfileLoading(false);
@@ -75,6 +81,19 @@ const UserProfile = () => {
       fetchUserData();
     } else {
       setProfileLoading(false);
+
+
+  // Load more books (pagination)
+  const loadMoreBooks = async () => {
+    try {
+      const nextPage = booksPage + 1;
+      const booksResponse = await axios.get(`/books/my-books?page=${nextPage}&limit=${BOOKS_LIMIT}`);
+      setUserBooks(prev => [...prev, ...(booksResponse.data.books || [])]);
+      setBooksPage(nextPage);
+    } catch (error) {
+      console.error('Error loading more books:', error);
+    }
+  };
       setLoading(false);
     }
   }, [user]);
@@ -270,9 +289,103 @@ const UserProfile = () => {
     return (
       <div className="profile-page">
         <div className="container">
-          <div className="loading" style={{ textAlign: 'center', paddingTop: '3rem' }}>
-            Loading profile...
+          <h1 className="page-title">My Profile</h1>
+          <div className="profile-layout">
+            {/* Left Sidebar - Profile Card Skeleton */}
+            <div className="profile-sidebar">
+              <div className="profile-card">
+                <div className="profile-image-container">
+                  <div style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#e9ecef',
+                    margin: '0 auto',
+                    marginBottom: 24,
+                    animation: 'skeleton-wave 1.6s linear infinite'
+                  }} />
+                </div>
+                <div style={{ width: 100, height: 24, background: '#e9ecef', borderRadius: 8, margin: '0 auto 8px', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                <div style={{ width: 80, height: 16, background: '#f3f3f3', borderRadius: 8, margin: '0 auto 8px', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                <div style={{ width: 120, height: 16, background: '#e9ecef', borderRadius: 8, margin: '0 auto', animation: 'skeleton-wave 1.6s linear infinite' }} />
+              </div>
+            </div>
+            {/* Right Content Area Skeleton */}
+            <div className="profile-content">
+              {/* Account Settings Section Skeleton */}
+              <div className="profile-section">
+                <div className="section-header">
+                  <div style={{ width: 160, height: 20, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  <div style={{ width: 24, height: 24, background: '#f3f3f3', borderRadius: '50%', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                </div>
+                <div className="section-content">
+                  {[1,2,3].map((_, i) => (
+                    <div key={i} className="form-group">
+                      <div style={{ width: 120, height: 16, background: '#e9ecef', borderRadius: 6, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      <div style={{ width: '100%', height: 36, background: '#f3f3f3', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                    </div>
+                  ))}
+                  <div className="form-actions">
+                    <div style={{ width: 160, height: 40, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </div>
+                </div>
+              </div>
+              {/* Edit Profile Information Section Skeleton */}
+              <div className="profile-section">
+                <div className="section-header">
+                  <div style={{ width: 200, height: 20, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  <div style={{ width: 24, height: 24, background: '#f3f3f3', borderRadius: '50%', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                </div>
+                <div className="section-content">
+                  {[1,2,3,4].map((_, i) => (
+                    <div key={i} className="form-group">
+                      <div style={{ width: 120, height: 16, background: '#e9ecef', borderRadius: 6, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      <div style={{ width: '100%', height: 36, background: '#f3f3f3', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                    </div>
+                  ))}
+                  {/* Profile picture skeleton */}
+                  <div className="form-group">
+                    <div style={{ width: 120, height: 16, background: '#e9ecef', borderRadius: 6, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                    <div style={{ width: 80, height: 80, background: '#f3f3f3', borderRadius: '50%', marginBottom: 12, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                    <div style={{ width: 180, height: 36, background: '#e9ecef', borderRadius: 8, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </div>
+                  <div className="form-actions">
+                    <div style={{ width: 160, height: 40, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  </div>
+                </div>
+              </div>
+              {/* My Listed Books Section Skeleton */}
+              <div className="profile-section">
+                <div className="section-header">
+                  <div style={{ width: 160, height: 20, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                  <div style={{ width: 24, height: 24, background: '#f3f3f3', borderRadius: '50%', animation: 'skeleton-wave 1.6s linear infinite' }} />
+                </div>
+                <div className="section-content">
+                  {[1,2].map((_, i) => (
+                    <div key={i} className="book-item" style={{ background: '#f8f9fa', borderRadius: 12, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 16, padding: 16 }}>
+                      <div style={{ width: 60, height: 80, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ width: 120, height: 16, background: '#e9ecef', borderRadius: 6, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        <div style={{ width: 80, height: 14, background: '#f3f3f3', borderRadius: 6, marginBottom: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                        <div style={{ width: 100, height: 12, background: '#e9ecef', borderRadius: 6, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                      </div>
+                      <div style={{ width: 60, height: 32, background: '#e9ecef', borderRadius: 8, animation: 'skeleton-wave 1.6s linear infinite' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
+          <style>{`
+            @keyframes skeleton-wave {
+              0% { background-position: -200px 0; }
+              100% { background-position: 200px 0; }
+            }
+            .skeleton-wave {
+              background: linear-gradient(90deg, #f3f3f3 25%, #e9ecef 50%, #f3f3f3 75%);
+              background-size: 400% 100%;
+            }
+          `}</style>
         </div>
       </div>
     );
@@ -548,40 +661,50 @@ const UserProfile = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="books-list">
-                      {userBooks.map(book => (
-                        <div key={book._id} className="book-item">
-                          <div className="book-info">
-                            <img 
-                              src={book.images?.[0] || '/placeholder-book.png'} 
-                              alt={book.title}
-                              className="book-cover"
-                            />
-                            <div className="book-details">
-                              <h6 className="book-title">{book.title}</h6>
-                              <p className="book-genre">{book.genre}</p>
-                              {book.condition && (
-                                <p className="book-condition">Condition: {book.condition}</p>
-                              )}
+                    <>
+                      <div className="books-list">
+                        {userBooks.map(book => (
+                          <div key={book._id} className="book-item">
+                            <div className="book-info">
+                              <div style={{ width: 60, height: 90, borderRadius: '0.5rem', overflow: 'hidden', background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img 
+                                  src={book.images?.[0] || '/placeholder-book.png'} 
+                                  alt={book.title}
+                                  className="book-cover"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '2/3', display: 'block' }}
+                                />
+                              </div>
+                              <div className="book-details">
+                                <h6 className="book-title">{book.title}</h6>
+                                <p className="book-genre">{book.genre}</p>
+                                {book.condition && (
+                                  <p className="book-condition">Condition: {book.condition}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="book-actions">
+                              <button 
+                                className="btn-edit"
+                                onClick={() => handleEditBook(book._id)}
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                className="btn-delete"
+                                onClick={() => handleDeleteBook(book._id)}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
-                          <div className="book-actions">
-                            <button 
-                              className="btn-edit"
-                              onClick={() => handleEditBook(book._id)}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              className="btn-delete"
-                              onClick={() => handleDeleteBook(book._id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
+                        ))}
+                      </div>
+                      {booksPage < booksPages && (
+                        <div style={{ textAlign: 'center', marginTop: 16 }}>
+                          <button onClick={loadMoreBooks} className="btn-primary">Load More</button>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

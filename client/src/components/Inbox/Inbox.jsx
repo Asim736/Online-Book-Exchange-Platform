@@ -14,14 +14,20 @@ const Inbox = () => {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedRequestDetails, setSelectedRequestDetails] = useState(null);
   
-  // Requests data
+  // Requests data (pagination)
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [outgoingRequests, setOutgoingRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
-  
-  // Conversations data - will be fetched from API
+  const [requestsPage, setRequestsPage] = useState(1);
+  const [requestsTotal, setRequestsTotal] = useState(0);
+  const [requestsPages, setRequestsPages] = useState(1);
+
+  // Conversations data (pagination)
   const [conversations, setConversations] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
+  const [conversationsPage, setConversationsPage] = useState(1);
+  const [conversationsTotal, setConversationsTotal] = useState(0);
+  const [conversationsPages, setConversationsPages] = useState(1);
   
   // Messages data - simplified structure for now
   const [messages, setMessages] = useState({});
@@ -43,8 +49,8 @@ const Inbox = () => {
   // Fetch requests and conversations data on component mount
   useEffect(() => {
     if (user?._id && token && typeof user._id === 'string') {
-      fetchRequests();
-      fetchConversations();
+      fetchRequests(1);
+      fetchConversations(1);
     } else {
       // Clear conversations if user is not logged in
       setConversations([]);
@@ -54,56 +60,69 @@ const Inbox = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?._id, token]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (page = 1) => {
     setRequestsLoading(true);
     try {
-      const [incomingRes, outgoingRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/requests/owner/${user._id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/requests/user/${user._id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
-
+      // Incoming requests (paginated)
+      const incomingRes = await fetch(`${API_BASE_URL}/requests/owner/${user._id}?page=${page}&limit=10`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (incomingRes.ok) {
         const incomingData = await incomingRes.json();
-        if (Array.isArray(incomingData)) {
-        setIncomingRequests(incomingData.map(req => ({
-          id: String(req._id || ''),
-          bookId: String(req.book?._id || ''),
-          bookTitle: String(req.book?.title || "Unknown Book"),
-          bookCover: String(req.book?.images?.[0] || "/placeholder-book.jpg"),
-          requesterName: String(req.requester?.username || "Unknown"),
-          requesterId: String(req.requester?._id || ''),
-          message: String(req.message || ""),
-          status: String(req.status || "pending"),
-          createdAt: req.createdAt,
-          type: 'incoming'
-        })));
+        if (Array.isArray(incomingData.requests)) {
+          setIncomingRequests(page === 1 ? incomingData.requests.map(req => ({
+            id: String(req._id || ''),
+            bookId: String(req.book?._id || ''),
+            bookTitle: String(req.book?.title || "Unknown Book"),
+            bookCover: String(req.book?.images?.[0] || "/placeholder-book.jpg"),
+            requesterName: String(req.requester?.username || "Unknown"),
+            requesterId: String(req.requester?._id || ''),
+            message: String(req.message || ""),
+            status: String(req.status || "pending"),
+            createdAt: req.createdAt,
+            type: 'incoming'
+          })) : [
+            ...incomingRequests,
+            ...incomingData.requests.map(req => ({
+              id: String(req._id || ''),
+              bookId: String(req.book?._id || ''),
+              bookTitle: String(req.book?.title || "Unknown Book"),
+              bookCover: String(req.book?.images?.[0] || "/placeholder-book.jpg"),
+              requesterName: String(req.requester?.username || "Unknown"),
+              requesterId: String(req.requester?._id || ''),
+              message: String(req.message || ""),
+              status: String(req.status || "pending"),
+              createdAt: req.createdAt,
+              type: 'incoming'
+            }))
+          ]);
+          setRequestsTotal(incomingData.total || 0);
+          setRequestsPages(incomingData.pages || 1);
+          setRequestsPage(incomingData.page || 1);
         } else {
-          console.warn('Incoming requests data is not an array:', incomingData);
           setIncomingRequests([]);
         }
       }
-
+      // Outgoing requests (not paginated yet)
+      const outgoingRes = await fetch(`${API_BASE_URL}/requests/user/${user._id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (outgoingRes.ok) {
         const outgoingData = await outgoingRes.json();
         if (Array.isArray(outgoingData)) {
-        setOutgoingRequests(outgoingData.map(req => ({
-          id: String(req._id || ''),
-          bookId: String(req.book?._id || ''),
-          bookTitle: String(req.book?.title || "Unknown Book"),
-          bookCover: String(req.book?.images?.[0] || "/placeholder-book.jpg"),
-          ownerName: String(req.owner?.username || "Unknown"),
-          ownerId: String(req.owner?._id || ''),
-          message: String(req.message || ""),
-          status: String(req.status || "pending"),
-          createdAt: req.createdAt,
-          type: 'outgoing'
-        })));
+          setOutgoingRequests(outgoingData.map(req => ({
+            id: String(req._id || ''),
+            bookId: String(req.book?._id || ''),
+            bookTitle: String(req.book?.title || "Unknown Book"),
+            bookCover: String(req.book?.images?.[0] || "/placeholder-book.jpg"),
+            ownerName: String(req.owner?.username || "Unknown"),
+            ownerId: String(req.owner?._id || ''),
+            message: String(req.message || ""),
+            status: String(req.status || "pending"),
+            createdAt: req.createdAt,
+            type: 'outgoing'
+          })));
         } else {
-          console.warn('Outgoing requests data is not an array:', outgoingData);
           setOutgoingRequests([]);
         }
       }
@@ -114,46 +133,67 @@ const Inbox = () => {
     }
   };
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (page = 1) => {
     setConversationsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/requests/conversations/${user._id}`, {
+      const response = await fetch(`${API_BASE_URL}/requests/conversations/${user._id}?page=${page}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-
       if (response.ok) {
         const conversationsData = await response.json();
-        setConversations(conversationsData.map(conv => ({
-          id: conv.id,
-          name: conv.participant.username,
-          message: conv.lastMessage,
-          time: formatTime(conv.lastMessageTime),
-          status: conv.status,
-          avatar: `https://i.pravatar.cc/150?u=${conv.participant.email}`,
-          unread: conv.unreadCount,
-          book: conv.book,
-          requestId: conv.requestId,
-          isOwner: conv.isOwner,
-          participantId: conv.id
-        })));
+        if (Array.isArray(conversationsData.conversations)) {
+          setConversations(page === 1 ? conversationsData.conversations.map(conv => ({
+            id: conv.id,
+            name: conv.participant.username,
+            message: conv.lastMessage,
+            time: formatTime(conv.lastMessageTime),
+            status: conv.status,
+            avatar: `https://i.pravatar.cc/150?u=${conv.participant.email}`,
+            unread: conv.unreadCount,
+            book: conv.book,
+            requestId: conv.requestId,
+            isOwner: conv.isOwner,
+            participantId: conv.id
+          })) : [
+            ...conversations,
+            ...conversationsData.conversations.map(conv => ({
+              id: conv.id,
+              name: conv.participant.username,
+              message: conv.lastMessage,
+              time: formatTime(conv.lastMessageTime),
+              status: conv.status,
+              avatar: `https://i.pravatar.cc/150?u=${conv.participant.email}`,
+              unread: conv.unreadCount,
+              book: conv.book,
+              requestId: conv.requestId,
+              isOwner: conv.isOwner,
+              participantId: conv.id
+            }))
+          ]);
+          setConversationsTotal(conversationsData.total || 0);
+          setConversationsPages(conversationsData.pages || 1);
+          setConversationsPage(conversationsData.page || 1);
 
-        // Initialize message threads
-        const initialMessages = {};
-        conversationsData.forEach(conv => {
-          initialMessages[conv.id] = [
-            {
-              id: 1,
-              sender: conv.isOwner ? 'other' : 'me',
-              text: conv.lastMessage,
-              time: formatTime(conv.lastMessageTime)
-            }
-          ];
-        });
-        setMessages(initialMessages);
+          // Initialize message threads
+          const initialMessages = {};
+          conversationsData.conversations.forEach(conv => {
+            initialMessages[conv.id] = [
+              {
+                id: 1,
+                sender: conv.isOwner ? 'other' : 'me',
+                text: conv.lastMessage,
+                time: formatTime(conv.lastMessageTime)
+              }
+            ];
+          });
+          setMessages(initialMessages);
 
-        // Set the first conversation as selected if none is selected
-        if (!selectedChat && conversationsData.length > 0) {
-          setSelectedChat(conversationsData[0].id);
+          // Set the first conversation as selected if none is selected
+          if (!selectedChat && conversationsData.conversations.length > 0) {
+            setSelectedChat(conversationsData.conversations[0].id);
+          }
+        } else {
+          setConversations([]);
         }
       }
     } catch (error) {
@@ -697,6 +737,15 @@ const Inbox = () => {
                   </div>
                 ))}
               </div>
+              {/* Load More Conversations Button */}
+              {conversationsPage < conversationsPages && (
+                <div className="d-flex justify-content-center my-3">
+                  <button className="btn btn-outline-primary" onClick={() => fetchConversations(conversationsPage + 1)}>
+                    Load More Conversations
+                  </button>
+                </div>
+              )}
+// Optionally, you can add a similar Load More for incoming requests if you want to paginate the requests list in the UI.
             </div>
 
             <div className="col-md-8 col-lg-9 chat-container">

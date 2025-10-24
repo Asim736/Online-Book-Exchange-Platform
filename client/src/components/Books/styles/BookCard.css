@@ -13,12 +13,14 @@
   cursor: pointer !important;
   position: relative !important;
   height: auto !important;
+  min-height: 450px !important; /* Fixed minimum height to prevent layout shift */
   border: 0 !important;
   outline: 0 !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
+  contain: layout style paint !important; /* CSS containment for performance */
 }
 
 .book-card:hover,
@@ -29,10 +31,13 @@
 
 .book-image-container {
   position: relative;
-  height: 300px;
+  height: 320px; /* Fixed height prevents CLS */
   overflow: hidden;
   background: #f9fafb;
-  width: 350%;
+  width: 100%;
+  /* Prevent layout shift from images */
+  aspect-ratio: 1 / 1;
+  contain: layout style paint;
 }
 
 .book-cover {
@@ -40,6 +45,11 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  /* Prevent image shift during load */
+  display: block;
+  background: #f3f4f6;
+  /* Reserve space for image */
+  min-height: 320px;
 }
 
 .book-card:hover .book-cover {
@@ -200,6 +210,9 @@
   background: white !important;
   width: 100% !important;
   box-sizing: border-box !important;
+  /* Prevent text layout shifts */
+  min-height: 130px !important;
+  contain: layout style;
 }
 
 .book-card .book-image-container,
@@ -207,7 +220,7 @@
   all: unset !important;
   display: block !important;
   position: relative !important;
-  height: 280px !important;
+  height: 320px !important; /* Fixed height to prevent layout shift */
   overflow: hidden !important;
   background: #f8f9fa !important;
   width: 100% !important;
@@ -291,7 +304,13 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .book-image-container {
-    height: 240px;
+    height: 280px !important;
+    min-height: 280px !important;
+    aspect-ratio: 1 / 1;
+  }
+  
+  .book-cover {
+    min-height: 280px !important;
   }
   
   .book-info {
@@ -306,25 +325,22 @@
     gap: 0.5rem;
   }
 
-  /* .book-status-badges {
-    bottom: 6px;
-    left: 6px;
-    max-width: 75px;
-    gap: 3px;
-  } */
-
-  /* .status-badge {
-    padding: 2px 4px;
-    font-size: 0.6rem;
-    border-radius: 10px;
-    min-height: 16px;
-    max-width: 75px;
-  } */
+  .book-card,
+  *[class*="book-card"],
+  *[class="book-card"] {
+    min-height: 410px !important;
+  }
 }
 
 @media (max-width: 576px) {
   .book-image-container {
-    height: 200px;
+    height: 240px !important;
+    min-height: 240px !important;
+    aspect-ratio: 1 / 1;
+  }
+  
+  .book-cover {
+    min-height: 240px !important;
   }
   
   .book-info {
@@ -335,18 +351,9 @@
     font-size: 1rem;
   }
 
-  /* .book-status-badges {
-    bottom: 4px;
-    left: 4px;
-    max-width: 65px;
-    gap: 2px;
-  } */
-
-  /* .status-badge {
-    padding: 1px 3px;
-    font-size: 0.55rem;
-    border-radius: 8px;
-    min-height: 14px;
-    max-width: 65px;
-  } */
+  .book-card,
+  *[class*="book-card"],
+  *[class="book-card"] {
+    min-height: 370px !important;
+  }
 }
