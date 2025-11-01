@@ -19,12 +19,10 @@ const ForgotPassword = React.lazy(() => import('./components/Auth/ForgotPassword
 const BookDetail = React.lazy(() => import('./components/Books/BookDetail'));
 const BookUpload = React.lazy(() => import('./components/Books/BookUpload'));
 const BookRequests = React.lazy(() => import('./components/Books/BookRequests'));
-const Messages = React.lazy(() => import('./components/Messages/Messages'));
 const Inbox = React.lazy(() => import('./components/Inbox/Inbox'));
 const Notifications = React.lazy(() => import('./components/Notifications/Notifications'));
 const WishList = React.lazy(() => import('./components/Books/WishList'));
 const UserProfile = React.lazy(() => import('./components/Profile/UserProfile'));
-const TestAuth = React.lazy(() => import('./components/TestAuth'));
 
 function App() {
   const location = useLocation();
@@ -40,9 +38,8 @@ function App() {
             <Route path="/" element={<div className="container"><HomePage /></div>} />
             <Route path="/browse" element={<div className="container"><BookList /></div>} />
             <Route path="/login" element={<div className="container"><Login /></div>} />
-            <Route path="/signup" element={<div className="container"><SignUp /></div>} /> {/* Ensure this matches */}
+            <Route path="/signup" element={<div className="container"><SignUp /></div>} />
             <Route path="/forgot-password" element={<div className="container"><ForgotPassword /></div>} />
-            <Route path="/test" element={<div className="container"><TestAuth /></div>} />
 
             {/* Protected Routes */}
             <Route 
@@ -75,14 +72,6 @@ function App() {
               element={
                 <PrivateRoute>
                   <div className="container"><BookRequests /></div>
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/chat" 
-              element={
-                <PrivateRoute>
-                  <div className="container"><Messages /></div>
                 </PrivateRoute>
               } 
             />

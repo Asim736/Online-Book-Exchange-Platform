@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import axios from '../../config/axios';
+import { API_BASE_URL } from '../../config/constants.js';
 import './styles/UserProfile.css';
 
 const UserProfile = () => {
-  const { user, login } = useAuth();
+  const { user, login, token } = useAuth();
   
   const [passwords, setPasswords] = useState({
     current: '',
@@ -50,10 +50,16 @@ const UserProfile = () => {
         }
 
         // Fetch user's books (paginated)
-        const booksResponse = await axios.get(`/books/my-books?page=1&limit=${BOOKS_LIMIT}`);
-        setUserBooks(booksResponse.data.books || []);
-        setBooksTotal(booksResponse.data.total || 0);
-        setBooksPages(booksResponse.data.pages || 1);
+        const booksResponse = await fetch(`${API_BASE_URL}/books/my-books?page=1&limit=${BOOKS_LIMIT}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const booksData = await booksResponse.json();
+        setUserBooks(booksData.books || []);
+        setBooksTotal(booksData.total || 0);
+        setBooksPages(booksData.pages || 1);
         setBooksPage(1);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -87,8 +93,14 @@ const UserProfile = () => {
   const loadMoreBooks = async () => {
     try {
       const nextPage = booksPage + 1;
-      const booksResponse = await axios.get(`/books/my-books?page=${nextPage}&limit=${BOOKS_LIMIT}`);
-      setUserBooks(prev => [...prev, ...(booksResponse.data.books || [])]);
+      const response = await fetch(`${API_BASE_URL}/books/my-books?page=${nextPage}&limit=${BOOKS_LIMIT}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      setUserBooks(prev => [...prev, ...(data.books || [])]);
       setBooksPage(nextPage);
     } catch (error) {
       console.error('Error loading more books:', error);
@@ -130,45 +142,81 @@ const UserProfile = () => {
     }
     
     try {
-      await axios.put('/users/change-password', {
-        currentPassword: passwords.current,
-        newPassword: passwords.newPass
+      const response = await fetch(`${API_BASE_URL}/users/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          currentPassword: passwords.current,
+          newPassword: passwords.newPass
+        })
       });
-      alert('Password updated successfully!');
-      setPasswords({ current: '', newPass: '', confirm: '' });
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('Password updated successfully!');
+        setPasswords({ current: '', newPass: '', confirm: '' });
+      } else {
+        alert(data.message || 'Error updating password');
+      }
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating password');
+      alert(error.message || 'Error updating password');
     }
   };
 
   const handleUpdateProfile = async () => {
     try {
-      const response = await axios.put('/users/profile', {
-        username: profile.name,
-        email: profile.email,
-        contact: profile.contact,
-        bio: profile.bio
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: profile.name,
+          email: profile.email,
+          contact: profile.contact,
+          bio: profile.bio
+        })
       });
+      const data = await response.json();
       
-      // Update the auth context with new user data
-      if (response.data.user) {
-        login(localStorage.getItem('token'), response.data.user);
+      if (response.ok) {
+        // Update the auth context with new user data
+        if (data.user) {
+          login(localStorage.getItem('token'), data.user);
+        }
+        alert('Profile updated successfully!');
+      } else {
+        alert(data.message || 'Error updating profile');
       }
-      
-      alert('Profile updated successfully!');
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating profile');
+      alert(error.message || 'Error updating profile');
     }
   };
 
   const handleDeleteBook = async (bookId) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        await axios.delete(`/books/${bookId}`);
-        setUserBooks(userBooks.filter(book => book._id !== bookId));
-        alert('Book deleted successfully!');
+        const response = await fetch(`${API_BASE_URL}/books/${bookId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          setUserBooks(userBooks.filter(book => book._id !== bookId));
+          alert('Book deleted successfully!');
+        } else {
+          const data = await response.json();
+          alert(data.message || 'Error deleting book');
+        }
       } catch (error) {
-        alert(error.response?.data?.message || 'Error deleting book');
+        alert(error.message || 'Error deleting book');
       }
     }
   };
@@ -187,24 +235,35 @@ const UserProfile = () => {
       setUploadingImage(true);
       
       // Update profile with null avatar
-      const response = await axios.put('/users/profile', {
-        username: profile.name,
-        email: profile.email,
-        contact: profile.contact,
-        bio: profile.bio,
-        avatar: null
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: profile.name,
+          email: profile.email,
+          contact: profile.contact,
+          bio: profile.bio,
+          avatar: null
+        })
       });
+      const data = await response.json();
       
-      // Update the auth context with new user data
-      if (response.data.user) {
-        login(localStorage.getItem('token'), response.data.user);
+      if (response.ok) {
+        // Update the auth context with new user data
+        if (data.user) {
+          login(localStorage.getItem('token'), data.user);
+        }
+        alert('Profile picture removed successfully!');
+      } else {
+        alert(data.message || 'Error removing profile picture');
       }
-      
-      alert('Profile picture removed successfully!');
       
     } catch (error) {
       console.error('Error removing image:', error);
-      alert(error.response?.data?.message || 'Error removing profile picture');
+      alert(error.message || 'Error removing profile picture');
     } finally {
       setUploadingImage(false);
     }
@@ -236,17 +295,29 @@ const UserProfile = () => {
           const base64Image = event.target.result;
           
           // Update profile with new image
-          const response = await axios.put('/users/profile', {
-            username: profile.name,
-            email: profile.email,
-            contact: profile.contact,
-            bio: profile.bio,
-            avatar: base64Image
+          const response = await fetch(`${API_BASE_URL}/users/profile`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              username: profile.name,
+              email: profile.email,
+              contact: profile.contact,
+              bio: profile.bio,
+              avatar: base64Image
+            })
           });
+          const data = await response.json();
           
-          // Update the auth context with new user data
-          if (response.data.user) {
-            login(localStorage.getItem('token'), response.data.user);
+          if (response.ok) {
+            // Update the auth context with new user data
+            if (data.user) {
+              login(localStorage.getItem('token'), data.user);
+            }
+          } else {
+            throw new Error(data.message || 'Error uploading profile picture');
           }
           
           alert('Profile image updated successfully!');

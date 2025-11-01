@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "../../config/axios";
+import { API_BASE_URL } from "../../config/constants.js";
 import "./styles/Auth.css";
 
 const SignUp = () => {
@@ -24,18 +24,27 @@ const SignUp = () => {
     }
 
     try {
-      const response = await axios.post("/auth/register", {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
       });
-      console.log("Registration successful:", response.data);
-      navigate("/login");
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log("Registration successful:", data);
+        navigate("/login");
+      } else {
+        throw new Error(data.message || "Registration failed");
+      }
     } catch (err) {
-      console.error("Full error:", err);
-      console.error("Response data:", err.response?.data);
-      console.error("Status code:", err.response?.status);
-      setError(err.response?.data?.message || "Registration failed");
+      console.error("Registration error:", err);
+      setError(err.message || "Registration failed");
     }
   };
 
