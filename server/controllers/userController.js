@@ -165,14 +165,14 @@ export const changePassword = async (req, res) => {
         }
 
         // Verify current password
-        const bcrypt = await import('bcrypt');
-        const isCurrentPasswordValid = await bcrypt.default.compare(currentPassword, user.password);
+    const bcrypt = await import('bcryptjs');
+    const isCurrentPasswordValid = await bcrypt.default.compare(currentPassword, user.password);
         if (!isCurrentPasswordValid) {
             return res.status(400).json({ message: 'Current password is incorrect' });
         }
 
         // Hash new password
-        const hashedNewPassword = await bcrypt.default.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.default.hash(newPassword, 10);
 
         // Update password
         await User.findByIdAndUpdate(userId, { password: hashedNewPassword });

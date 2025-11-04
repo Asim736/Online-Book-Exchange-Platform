@@ -66,7 +66,7 @@ app.get('/api/health', (req, res) => {
 // Test user creation and login
 app.post('/api/test-user', async (req, res) => {
     try {
-        const bcrypt = await import('bcrypt');
+    const bcrypt = await import('bcryptjs');
         const jwt = await import('jsonwebtoken');
         const User = (await import('./models/User.js')).default;
         
