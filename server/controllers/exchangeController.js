@@ -98,7 +98,8 @@ export const deleteExchange = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this exchange' });
         }
 
-        await exchange.remove();
+        // Mongoose v7 removed document.remove(); use deleteOne() instead
+        await exchange.deleteOne();
         res.status(200).json({ message: 'Exchange deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -212,8 +212,19 @@ const UserProfile = () => {
           setUserBooks(userBooks.filter(book => book._id !== bookId));
           alert('Book deleted successfully!');
         } else {
-          const data = await response.json();
-          alert(data.message || 'Error deleting book');
+          // Try to extract a meaningful error message even if the server didn't return JSON
+          let message = `Error deleting book (HTTP ${response.status})`;
+          try {
+            const data = await response.json();
+            message = data?.message || data?.error || message;
+          } catch (e) {
+            try {
+              const text = await response.text();
+              if (text) message = text;
+            } catch {}
+          }
+          alert(message);
+          console.error('Delete book failed:', { status: response.status, url: response.url, message });
         }
       } catch (error) {
         alert(error.message || 'Error deleting book');
