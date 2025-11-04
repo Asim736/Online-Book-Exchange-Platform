@@ -6,7 +6,8 @@ import { Image } from 'lucide-react';
 import AutoCompleteInput from '../common/AutoCompleteInput';
 import './styles/BookUpload.css';
 
-// Suggestion lists for autocomplete
+// Suggestion lists for autocomplete (must match server enum via mapping below)
+// Keep suggestions user-friendly, then map to schema-safe values when submitting
 const genreSuggestions = [
   'Fiction',
   'Non-Fiction',
@@ -14,31 +15,35 @@ const genreSuggestions = [
   'Science Fiction',
   'Romance',
   'Thriller',
-  'Self-Help',
-  'Biography',
-  'Fantasy',
-  'Historical Fiction',
-  'Horror',
-  'Poetry',
-  'Drama',
-  'Adventure',
-  'Young Adult',
-  'Children',
-  'Graphic Novel',
-  'Memoir',
-  'True Crime',
-  'Philosophy'
+  'Self-Help'
 ];
 
 const conditionSuggestions = [
   'New',
   'Like New',
-  'Very Good',
   'Good',
-  'Acceptable',
   'Fair',
   'Poor'
 ];
+
+// Maps display values -> server enum values defined in server/models/Book.js
+const GENRE_MAP = {
+  'Fiction': 'fiction',
+  'Non-Fiction': 'non-fiction',
+  'Mystery': 'mystery',
+  'Science Fiction': 'sci-fi',
+  'Romance': 'romance',
+  'Thriller': 'thriller',
+  'Self-Help': 'self-help'
+};
+
+const CONDITION_MAP = {
+  'New': 'new',
+  'Like New': 'like-new',
+  'Good': 'good',
+  'Fair': 'fair',
+  'Poor': 'poor'
+};
 
 const BookUpload = () => {
   const navigate = useNavigate();
@@ -145,6 +150,9 @@ const BookUpload = () => {
       ...bookData,
       title: bookData.title.trim(),
       author: bookData.author.trim(),
+      // Map to backend enum-safe values
+      genre: GENRE_MAP[bookData.genre] || bookData.genre?.toLowerCase?.(),
+      condition: CONDITION_MAP[bookData.condition] || bookData.condition?.toLowerCase?.(),
       location: bookData.location.trim(),
       description: bookData.description.trim(),
       externalUrls: bookData.externalUrls.filter(url => url.trim()),
@@ -169,7 +177,10 @@ const BookUpload = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || `Failed to ${isEditMode ? 'update' : 'upload'} book`);
+        // Prefer detailed server error if provided
+        throw new Error(
+          data?.detail || data?.message || `Failed to ${isEditMode ? 'update' : 'upload'} book`
+        );
       }
 
       navigate(isEditMode ? '/profile' : '/browse');
