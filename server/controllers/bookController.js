@@ -167,8 +167,12 @@ export const deleteBook = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this book' });
         }
 
-        await book.remove();
-        res.status(200).json({ message: 'Book deleted successfully' });
+    // Mongoose v7 removed document.remove(). Use deleteOne() or findByIdAndDelete
+    await book.deleteOne();
+    res.status(200).json({ 
+      message: 'Book deleted successfully',
+      id: book._id
+    });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
