@@ -28,7 +28,6 @@ const UserProfile = () => {
   const BOOKS_LIMIT = 8;
   const [profileImage, setProfileImage] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [deletingIds, setDeletingIds] = useState({});
   const [openSection, setOpenSection] = useState({
     accountSettings: true,
     editProfile: true,
@@ -88,7 +87,9 @@ const UserProfile = () => {
       fetchUserData();
     } else {
       setProfileLoading(false);
-
+      setLoading(false);
+    }
+  }, [user, token]);
 
   // Load more books (pagination)
   const loadMoreBooks = async () => {
@@ -107,9 +108,6 @@ const UserProfile = () => {
       console.error('Error loading more books:', error);
     }
   };
-      setLoading(false);
-    }
-  }, [user]);
 
   const toggleSection = (section) => {
     setOpenSection({
@@ -201,8 +199,6 @@ const UserProfile = () => {
   const handleDeleteBook = async (bookId) => {
     if (window.confirm('Are you sure you want to delete this book?')) {
       try {
-        // mark this book as deleting to disable the button and show progress
-        setDeletingIds(prev => ({ ...prev, [bookId]: true }));
         const response = await fetch(`${API_BASE_URL}/books/${bookId}`, {
           method: 'DELETE',
           headers: {
@@ -232,18 +228,9 @@ const UserProfile = () => {
       } catch (error) {
         alert(error.message || 'Error deleting book');
       }
-        // clear deleting state for this book
-        setDeletingIds(prev => {
-          const next = { ...prev };
-          delete next[bookId];
-          return next;
-        });
-      }
     }
   };
 
-  const isDeleting = (bookId) => !!deletingIds[bookId];
-  
   const handleEditBook = (bookId) => {
     // Navigate to edit book page (you can implement this route)
     window.location.href = `/books/edit/${bookId}`;
@@ -786,9 +773,8 @@ const UserProfile = () => {
                               <button 
                                 className="btn-delete"
                                 onClick={() => handleDeleteBook(book._id)}
-                                disabled={isDeleting(book._id)}
                               >
-                                {isDeleting(book._id) ? 'Deleting…' : 'Delete'}
+                                Delete
                               </button>
                             </div>
                           </div>
