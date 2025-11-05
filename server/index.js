@@ -22,13 +22,32 @@ if (!process.env.MONGODB_URI) {
 const app = express();
 
 // Middleware
+// Robust CORS handling: allow specific origins from env in production, with exact match
+const allowedOrigins = (process.env.NODE_ENV === 'production'
+    ? (process.env.CORS_ORIGINS || '')
+    : 'http://localhost:5173,http://localhost:5174,http://localhost:5175')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CORS_ORIGINS?.split(',') || []
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
-  credentials: true,
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+    origin: (origin, callback) => {
+        // Allow non-browser requests (no Origin header)
+        if (!origin) return callback(null, true);
+        const isAllowed = allowedOrigins.includes(origin);
+        if (isAllowed) return callback(null, true);
+        return callback(new Error(`CORS: Origin not allowed (${origin})`), false);
+    },
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
+app.use((req, res, next) => {
+    // Lightweight visibility for CORS decisions (safe in production logs)
+    if (req.headers.origin) {
+        console.log(`CORS check - Origin: ${req.headers.origin} | Allowed: ${allowedOrigins.includes(req.headers.origin)}`);
+    }
+    next();
+});
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Increase payload limit for images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
