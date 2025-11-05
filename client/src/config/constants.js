@@ -1,7 +1,7 @@
 // API Configuration - Dynamic based on environment
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD 
-    ? 'https://your-ec2-domain.com/api'  // Replace with your EC2 domain
+    ? 'https://api.exchangebook.me/api'  // Production fallback (public API domain)
     : 'http://localhost:5001/api');
 
 // Environment detection
