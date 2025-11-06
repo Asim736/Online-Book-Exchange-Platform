@@ -34,8 +34,10 @@ const bookSchema = new mongoose.Schema({
     type: String,
     trim: true
   }],
+  // Allow legacy string entries OR new object form { original, thumb }
   images: [{
-    type: String
+    type: mongoose.Schema.Types.Mixed,
+    default: []
   }],
   owner: {
     type: mongoose.Schema.Types.ObjectId,
