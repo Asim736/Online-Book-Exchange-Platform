@@ -3,15 +3,15 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-// Import routes
+// Load environment variables EARLY so route imports can access them
+dotenv.config();
+
+// Import routes (these may import middleware that relies on env vars)
 import authRoutes from './routes/auth.js';
 import bookRoutes from './routes/books.js';
 import userRoutes from './routes/users.js';
 import exchangeRoutes from './routes/exchanges.js';
 import requestRoutes from './routes/requests.js';
-
-// Load environment variables
-dotenv.config();
 
 // Verify required environment variables
 if (!process.env.MONGODB_URI) {
