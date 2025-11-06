@@ -14,7 +14,7 @@ export const getBooksByIds = async (req, res) => {
 };
 import Book from '../models/Book.js';
 import User from '../models/User.js';
-import { deleteS3Objects } from '../config/s3.js';
+import { deleteS3Objects, S3_BUCKET, S3_REGION } from '../config/s3.js';
 
 // Example usage
 export const getAllBooks = async (req, res) => {
@@ -96,9 +96,19 @@ export const createBook = async (req, res) => {
     const externalUrls = parseMaybeJson(req.body.externalUrls) || [];
 
     // Gather uploaded image URLs from multer-s3
-    const uploadedUrls = Array.isArray(req.files)
+    const rawUploads = Array.isArray(req.files)
       ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
       : [];
+
+    // Normalize to full HTTPS URLs if we only received keys
+    const toUrl = (u) => {
+      if (!u) return null;
+      if (/^https?:\/\//i.test(u)) return u;
+      // ensure no leading slash duplication
+      const key = u.replace(/^\//, '');
+      return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+    };
+    const uploadedUrls = rawUploads.map(toUrl).filter(Boolean);
 
     // Debug visibility for uploads (safe fields only)
     try {
@@ -164,9 +174,16 @@ export const updateBook = async (req, res) => {
         };
 
         const existingImages = parseMaybeJson(req.body.existingImages) || book.images || [];
-        const uploadedUrls = Array.isArray(req.files)
-          ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
-          : [];
+            const rawUploads = Array.isArray(req.files)
+              ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
+              : [];
+            const toUrl = (u) => {
+              if (!u) return null;
+              if (/^https?:\/\//i.test(u)) return u;
+              const key = u.replace(/^\//, '');
+              return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+            };
+            const uploadedUrls = rawUploads.map(toUrl).filter(Boolean);
 
         const update = {
           title: req.body.title ?? book.title,
