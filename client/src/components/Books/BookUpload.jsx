@@ -63,6 +63,7 @@ const BookUpload = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [newFiles, setNewFiles] = useState([]); // selected image files for upload
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -146,20 +147,23 @@ const BookUpload = () => {
       return;
     }
 
-    const formattedData = {
-      ...bookData,
-      title: bookData.title.trim(),
-      author: bookData.author.trim(),
-      // Map to backend enum-safe values
-      genre: GENRE_MAP[bookData.genre] || bookData.genre?.toLowerCase?.(),
-      condition: CONDITION_MAP[bookData.condition] || bookData.condition?.toLowerCase?.(),
-      location: bookData.location.trim(),
-      description: bookData.description.trim(),
-      externalUrls: bookData.externalUrls.filter(url => url.trim()),
-      images: bookData.images,
-      owner: user._id,
-      status: isEditMode ? bookData.status : 'available' // New books are automatically available
-    };
+    // Build multipart form data for server (multer-s3)
+    const form = new FormData();
+    form.append('title', bookData.title.trim());
+    form.append('author', bookData.author.trim());
+    form.append('genre', GENRE_MAP[bookData.genre] || bookData.genre?.toLowerCase?.());
+    form.append('condition', CONDITION_MAP[bookData.condition] || bookData.condition?.toLowerCase?.());
+    form.append('location', bookData.location.trim());
+    form.append('description', bookData.description.trim());
+    form.append('externalUrls', JSON.stringify(bookData.externalUrls.filter(url => url.trim())));
+    // For edit mode, pass existing image URLs we want to keep
+    if (isEditMode) {
+      const keepExisting = (bookData.images || []).filter((img) => typeof img === 'string' && img.startsWith('http'));
+      form.append('existingImages', JSON.stringify(keepExisting));
+      form.append('status', bookData.status);
+    }
+    // Append files
+    newFiles.forEach((file) => form.append('images', file));
 
     try {
       const url = isEditMode ? `${API_BASE_URL}/books/${id}` : `${API_BASE_URL}/books`;
@@ -168,10 +172,9 @@ const BookUpload = () => {
       const response = await fetch(url, {
         method: method,
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formattedData)
+        body: form
       });
 
       const data = await response.json();
@@ -183,7 +186,7 @@ const BookUpload = () => {
         );
       }
 
-      navigate(isEditMode ? '/profile' : '/browse');
+  navigate(isEditMode ? '/profile' : '/browse');
     } catch (error) {
       setError(error.message);
       console.error(`Error ${isEditMode ? 'updating' : 'uploading'} book:`, error);
@@ -221,65 +224,37 @@ const BookUpload = () => {
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+    // If the preview is a blob URL, it corresponds to a newly selected file
+    const preview = bookData.images[index];
+    if (typeof preview === 'string' && preview.startsWith('blob:')) {
+      // Map global index to blob-only index
+      const blobIndex = bookData.images
+        .slice(0, index + 1)
+        .filter(u => typeof u === 'string' && u.startsWith('blob:'))
+        .length - 1;
+      setNewFiles(prev => prev.filter((_, i) => i !== blobIndex));
+    }
   };
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const maxFileSize = 2 * 1024 * 1024; // Reduced to 2MB limit per file
-    const maxTotalImages = 3; // Reduced to max 3 images
-    
-    // Check if adding these images would exceed the total limit
-    if (bookData.images.length + files.length > maxTotalImages) {
-      setError(`Maximum ${maxTotalImages} images allowed. You currently have ${bookData.images.length} images.`);
+    const files = Array.from(e.target.files || []);
+    const maxTotalImages = 3;
+    const combinedCount = (bookData.images?.length || 0) + newFiles.length + files.length;
+    if (combinedCount > maxTotalImages) {
+      setError(`Maximum ${maxTotalImages} images allowed.`);
       return;
     }
-    
-    // Validate file sizes
-    const oversizedFiles = files.filter(file => file.size > maxFileSize);
-    if (oversizedFiles.length > 0) {
-      setError(`Some files are too large. Maximum file size is 2MB. Please compress your images.`);
+    // basic size validation to 5MB (server also enforces)
+    const tooLarge = files.find(f => f.size > 5 * 1024 * 1024);
+    if (tooLarge) {
+      setError('Each image must be 5MB or smaller.');
       return;
     }
-    
-    const imagePromises = files.map(file => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          // Strict base64 size limit to prevent MongoDB document size issues
-          const result = e.target.result;
-          if (result.length > 3 * 1024 * 1024) { // ~2.25MB base64 limit
-            reject(new Error('Image too large after encoding'));
-          } else {
-            resolve(result);
-          }
-        };
-        reader.onerror = () => reject(new Error('Failed to read image'));
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(imagePromises)
-      .then(images => {
-        // Calculate total estimated document size
-        const currentImageSize = bookData.images.join('').length;
-        const newImageSize = images.join('').length;
-        const totalSize = currentImageSize + newImageSize;
-        
-        // MongoDB document limit is 16MB, let's keep it under 10MB to be safe
-        if (totalSize > 10 * 1024 * 1024) {
-          setError('Total image size too large. Please use smaller or fewer images.');
-          return;
-        }
-        
-        setBookData(prev => ({
-          ...prev,
-          images: [...prev.images, ...images]
-        }));
-        setError(null); // Clear any previous errors
-      })
-      .catch(error => {
-        setError(`Image upload failed: ${error.message}. Please use smaller images.`);
-      });
+    // For preview, create object URLs
+    const previews = files.map(f => URL.createObjectURL(f));
+    setNewFiles(prev => [...prev, ...files]);
+    setBookData(prev => ({ ...prev, images: [...prev.images, ...previews] }));
+    setError(null);
   };
 
   return (

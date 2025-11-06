@@ -14,6 +14,7 @@ export const getBooksByIds = async (req, res) => {
 };
 import Book from '../models/Book.js';
 import User from '../models/User.js';
+import { deleteS3Objects } from '../config/s3.js';
 
 // Example usage
 export const getAllBooks = async (req, res) => {
@@ -86,21 +87,30 @@ export const createBook = async (req, res) => {
       });
     }
 
-    // Calculate estimated document size to prevent MongoDB 16MB limit issues
-    const requestSize = JSON.stringify(req.body).length;
-    const maxSize = 10 * 1024 * 1024; // 10MB safety limit (MongoDB limit is 16MB)
-    
-    if (requestSize > maxSize) {
-      return res.status(413).json({
-        message: 'Document too large',
-        detail: 'Please reduce image sizes or number of images. Total size should be under 10MB.'
-      });
-    }
+    // Parse JSON-like fields that may have come via multipart/form-data
+    const parseMaybeJson = (v) => {
+      if (v == null) return undefined;
+      try { return typeof v === 'string' ? JSON.parse(v) : v; } catch { return v; }
+    };
+
+    const externalUrls = parseMaybeJson(req.body.externalUrls) || [];
+
+    // Gather uploaded image URLs from multer-s3
+    const uploadedUrls = Array.isArray(req.files)
+      ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
+      : [];
 
     const bookData = {
-      ...req.body,
+      title: req.body.title,
+      author: req.body.author,
+      genre: req.body.genre,
+      condition: req.body.condition,
+      location: req.body.location,
+      description: req.body.description,
+      externalUrls,
+      images: uploadedUrls,
       owner: req.user._id,
-      status: 'available' // Automatically set new books as available
+      status: 'available'
     };
 
     const book = new Book(bookData);
@@ -140,9 +150,32 @@ export const updateBook = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this book' });
         }
 
+        // Allow multipart form updates: keep existing images and add newly uploaded ones
+        const parseMaybeJson = (v) => {
+          if (v == null) return undefined;
+          try { return typeof v === 'string' ? JSON.parse(v) : v; } catch { return v; }
+        };
+
+        const existingImages = parseMaybeJson(req.body.existingImages) || book.images || [];
+        const uploadedUrls = Array.isArray(req.files)
+          ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
+          : [];
+
+        const update = {
+          title: req.body.title ?? book.title,
+          author: req.body.author ?? book.author,
+          genre: req.body.genre ?? book.genre,
+          condition: req.body.condition ?? book.condition,
+          location: req.body.location ?? book.location,
+          description: req.body.description ?? book.description,
+          externalUrls: parseMaybeJson(req.body.externalUrls) ?? book.externalUrls,
+          images: [...existingImages, ...uploadedUrls].slice(0, 3),
+          status: req.body.status ?? book.status
+        };
+
         const updatedBook = await Book.findByIdAndUpdate(
             req.params.id,
-            { $set: req.body },
+            { $set: update },
             { new: true }
         ).populate('owner', 'username email avatar bio');
         
@@ -166,6 +199,9 @@ export const deleteBook = async (req, res) => {
         if (book.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to delete this book' });
         }
+
+    // Best-effort: delete images from S3 (ignore non-URL/base64)
+    try { await deleteS3Objects(book.images || []); } catch (e) { /* noop */ }
 
     // Mongoose v7 removed document.remove(). Use deleteOne() or findByIdAndDelete
     await book.deleteOne();

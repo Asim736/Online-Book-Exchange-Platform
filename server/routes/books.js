@@ -10,6 +10,7 @@ import {
     getUserBooks,
     getBooksByIds
 } from '../controllers/bookController.js';
+import { upload } from '../middleware/upload.js';
 // Bulk fetch books by IDs (for wishlist)
 router.post('/bulk', getBooksByIds);
 
@@ -24,8 +25,10 @@ router.get('/:id', getBookById);
 
 // Apply auth middleware for remaining protected routes
 router.use(authenticateToken);
-router.post('/', createBook);
-router.put('/:id', updateBook);
+// Create with multipart upload: field name 'images'
+router.post('/', upload.array('images', 3), createBook);
+// Update can also accept additional images
+router.put('/:id', upload.array('images', 3), updateBook);
 router.delete('/:id', deleteBook);
 
 export default router;
