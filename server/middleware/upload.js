@@ -17,7 +17,6 @@ function objectKey(req, file, cb) {
 const storage = multerS3({
   s3,
   bucket: S3_BUCKET,
-  acl: 'public-read',
   contentType: multerS3.AUTO_CONTENT_TYPE,
   cacheControl: 'public, max-age=31536000, immutable',
   key: objectKey
