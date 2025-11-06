@@ -100,6 +100,13 @@ export const createBook = async (req, res) => {
       ? req.files.map(f => f.location || f.key || f.path).filter(Boolean)
       : [];
 
+    // Debug visibility for uploads (safe fields only)
+    try {
+      const count = Array.isArray(req.files) ? req.files.length : 0;
+      const types = (req.files || []).map(f => f.mimetype);
+      console.log(`[UPLOAD] Received ${count} file(s) | types=${types.join(', ')} | urls=${uploadedUrls.length}`);
+    } catch (_) {}
+
     const bookData = {
       title: req.body.title,
       author: req.body.author,

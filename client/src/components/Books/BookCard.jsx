@@ -75,7 +75,7 @@ const BookCard = memo(({ book, priority = false }) => {
 
     const currentImage = book.images && book.images.length > 0
         ? book.images[currentImageIndex]
-        : book.imageUrl || book.cover || "/placeholder-book.jpg";
+        : book.imageUrl || book.cover || "/icon/books.svg";
 
     const handleCardClick = () => {
         if (!isAuthenticated) {
