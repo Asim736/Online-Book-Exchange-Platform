@@ -99,6 +99,8 @@ const BookCard = memo(({ book, priority = false }) => {
                     width="320"
                     height="320"
                     decoding="async"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { e.currentTarget.src = "/icon/books.svg"; }}
                     style={{ 
                         aspectRatio: '1 / 1',
                         objectFit: 'cover'
