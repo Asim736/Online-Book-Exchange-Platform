@@ -73,8 +73,15 @@ const BookCard = memo(({ book, priority = false }) => {
         }
     };
 
+    // Support both legacy string array and new object form { original, thumb }
+    const resolveImageEntry = (entry) => {
+        if (!entry) return null;
+        if (typeof entry === 'string') return entry; // legacy
+        if (typeof entry === 'object') return entry.thumb || entry.original; // prefer thumbnail
+        return null;
+    };
     const currentImage = book.images && book.images.length > 0
-        ? book.images[currentImageIndex]
+        ? resolveImageEntry(book.images[currentImageIndex])
         : book.imageUrl || book.cover || "/icon/books.svg";
 
     const handleCardClick = () => {

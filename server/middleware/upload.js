@@ -35,3 +35,7 @@ export const upload = multer({
     cb(new Error('Only JPEG, PNG, or WEBP images are allowed'));
   }
 });
+
+// NOTE: We still stream originals directly to S3 via multer-s3, then later
+// thumbnail generation reads them back. Future optimization: switch to
+// memoryStorage + single pass sharp processing before upload.

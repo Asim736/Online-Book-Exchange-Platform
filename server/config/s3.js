@@ -1,4 +1,4 @@
-import { S3Client, DeleteObjectsCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const required = (name, fallback) => {
@@ -31,7 +31,7 @@ export function keyFromUrl(url) {
 
 export async function deleteS3Objects(urls = []) {
   const keys = urls
-    .map(keyFromUrl)
+    .map(u => typeof u === 'string' ? keyFromUrl(u) : null)
     .filter(Boolean)
     // Only delete keys under our prefix if defined
     .filter(k => !S3_PREFIX || k.startsWith(S3_PREFIX));
@@ -71,5 +71,51 @@ export async function presignUrlIfEnabled(urlOrKey) {
   } catch (err) {
     console.error('[S3] presign error:', err?.message || err);
     return urlOrKey; // fall back to original
+  }
+}
+
+// Utility: stream to buffer (for S3 getObject Body)
+async function streamToBuffer(stream) {
+  if (!stream) return Buffer.alloc(0);
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', (c) => chunks.push(c));
+    stream.on('error', reject);
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+}
+
+// Create a 320x320 webp thumbnail for an S3 object key; returns full HTTPS URL
+export async function createThumbnailForKey(originalKey) {
+  try {
+    const key = originalKey.replace(/^\//, '');
+    // Derive thumb key inside the same prefix for easy cleanup
+    let thumbKey;
+    if (key.startsWith(S3_PREFIX)) {
+      thumbKey = key.replace(S3_PREFIX, `${S3_PREFIX}/thumbs`);
+    } else {
+      thumbKey = `${S3_PREFIX}/thumbs/${key.split('/').pop()}`;
+    }
+
+    const obj = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }));
+    const inputBuf = await streamToBuffer(obj.Body);
+    const sharp = (await import('sharp')).default;
+    const out = await sharp(inputBuf)
+      .resize(320, 320, { fit: 'cover', position: 'entropy' })
+      .toFormat('webp', { quality: 78 })
+      .toBuffer();
+
+    await s3.send(new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: thumbKey,
+      Body: out,
+      ContentType: 'image/webp',
+      CacheControl: 'public, max-age=31536000, immutable'
+    }));
+
+    return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${thumbKey}`;
+  } catch (err) {
+    console.error('[S3] thumbnail error:', err?.message || err);
+    return null;
   }
 }
