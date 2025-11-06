@@ -144,8 +144,16 @@ export const createBook = async (req, res) => {
       if (key) {
         thumbUrl = await createThumbnailForKey(key);
       }
+      // Debug per file
+      console.log('[THUMBS] File processed:', {
+        key,
+        originalUrl,
+        thumbGenerated: !!thumbUrl
+      });
       imageEntries.push({ original: originalUrl, thumb: thumbUrl });
     }
+    // Aggregate debug
+    console.log('[THUMBS] imageEntries:', JSON.stringify(imageEntries));
 
     // Debug visibility for uploads (safe fields only)
     try {
