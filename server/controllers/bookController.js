@@ -129,7 +129,7 @@ export const createBook = async (req, res) => {
     const externalUrls = parseMaybeJson(req.body.externalUrls) || [];
 
     // Gather uploaded image URLs from multer-s3
-    const uploaded = Array.isArray(req.files) ? req.files : [];
+  const uploaded = Array.isArray(req.files) ? req.files : [];
     const toUrl = (u) => {
       if (!u) return null;
       if (/^https?:\/\//i.test(u)) return u;
@@ -144,16 +144,10 @@ export const createBook = async (req, res) => {
       if (key) {
         thumbUrl = await createThumbnailForKey(key);
       }
-      // Debug per file
-      console.log('[THUMBS] File processed:', {
-        key,
-        originalUrl,
-        thumbGenerated: !!thumbUrl
-      });
-      imageEntries.push({ original: originalUrl, thumb: thumbUrl });
+      const entry = { original: originalUrl, thumb: thumbUrl };
+      imageEntries.push(entry);
     }
-    // Aggregate debug
-    console.log('[THUMBS] imageEntries:', JSON.stringify(imageEntries));
+    console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
 
     // Debug visibility for uploads (safe fields only)
     try {
@@ -234,8 +228,10 @@ export const updateBook = async (req, res) => {
           if (key) {
             thumbUrl = await createThumbnailForKey(key);
           }
-          newEntries.push({ original: originalUrl, thumb: thumbUrl });
+          const entry = { original: originalUrl, thumb: thumbUrl };
+          newEntries.push(entry);
         }
+        console.log('[UPLOAD] update newEntries:', JSON.stringify(newEntries));
 
         const update = {
           title: req.body.title ?? book.title,

@@ -113,7 +113,9 @@ export async function createThumbnailForKey(originalKey) {
       CacheControl: 'public, max-age=31536000, immutable'
     }));
 
-    return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${thumbKey}`;
+    const url = `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${thumbKey}`;
+    console.log(`[THUMBNAIL] Created thumb for ${key} -> ${thumbKey}`);
+    return url;
   } catch (err) {
     console.error('[S3] thumbnail error:', err?.message || err);
     return null;
