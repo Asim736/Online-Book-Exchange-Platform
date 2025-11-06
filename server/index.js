@@ -3,15 +3,24 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-// Load environment variables EARLY so route imports can access them
+// Load environment variables EARLY
 dotenv.config();
 
-// Import routes (these may import middleware that relies on env vars)
-import authRoutes from './routes/auth.js';
-import bookRoutes from './routes/books.js';
-import userRoutes from './routes/users.js';
-import exchangeRoutes from './routes/exchanges.js';
-import requestRoutes from './routes/requests.js';
+// Dynamically import routes AFTER env is loaded so any middleware
+// initialized at import time (e.g., multer-s3) can read process.env
+const [
+    { default: authRoutes },
+    { default: bookRoutes },
+    { default: userRoutes },
+    { default: exchangeRoutes },
+    { default: requestRoutes }
+] = await Promise.all([
+    import('./routes/auth.js'),
+    import('./routes/books.js'),
+    import('./routes/users.js'),
+    import('./routes/exchanges.js'),
+    import('./routes/requests.js')
+]);
 
 // Verify required environment variables
 if (!process.env.MONGODB_URI) {
