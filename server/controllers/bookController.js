@@ -14,7 +14,7 @@ export const getBooksByIds = async (req, res) => {
 };
 import Book from '../models/Book.js';
 import User from '../models/User.js';
-import { deleteS3Objects, S3_BUCKET, S3_REGION } from '../config/s3.js';
+import { deleteS3Objects, S3_BUCKET, S3_REGION, presignUrlIfEnabled, S3_SIGNED_URLS } from '../config/s3.js';
 
 // Example usage
 export const getAllBooks = async (req, res) => {
@@ -36,7 +36,7 @@ export const getAllBooks = async (req, res) => {
     // Log query start
     const start = Date.now();
 
-    const [books, total] = await Promise.all([
+    let [books, total] = await Promise.all([
       Book.find(filter)
         .select('title author genre location images owner status createdAt')
         .populate('owner', 'username avatar')
@@ -45,6 +45,17 @@ export const getAllBooks = async (req, res) => {
         .limit(limit),
       Book.countDocuments(filter)
     ]);
+
+    // If presigned URLs are enabled, convert image URLs for each book
+    if (S3_SIGNED_URLS) {
+      books = await Promise.all(books.map(async (b) => {
+        const signedImages = await Promise.all((b.images || []).map(u => presignUrlIfEnabled(u)));
+        // Avoid mutating Mongoose internals directly; toObject preserves lean copy
+        const copy = b.toObject();
+        copy.images = signedImages;
+        return copy;
+      }));
+    }
 
     // Log query end
     const duration = Date.now() - start;
@@ -67,12 +78,18 @@ export const getAllBooks = async (req, res) => {
 
 export const getBookById = async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id)
-            .populate('owner', 'username email avatar bio');
+    let book = await Book.findById(req.params.id)
+      .populate('owner', 'username email avatar bio');
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
-        res.status(200).json(book);
+    if (S3_SIGNED_URLS) {
+      const signedImages = await Promise.all((book.images || []).map(u => presignUrlIfEnabled(u)));
+      const copy = book.toObject();
+      copy.images = signedImages;
+      return res.status(200).json(copy);
+    }
+    res.status(200).json(book);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -254,7 +271,7 @@ export const getUserBooks = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Query for user's books
-    const [books, total] = await Promise.all([
+    let [books, total] = await Promise.all([
       Book.find({ owner: req.user._id })
         .sort({ createdAt: -1 })
         .select('-__v')
@@ -262,6 +279,15 @@ export const getUserBooks = async (req, res) => {
         .limit(limit),
       Book.countDocuments({ owner: req.user._id })
     ]);
+
+    if (S3_SIGNED_URLS) {
+      books = await Promise.all(books.map(async (b) => {
+        const signedImages = await Promise.all((b.images || []).map(u => presignUrlIfEnabled(u)));
+        const copy = b.toObject();
+        copy.images = signedImages;
+        return copy;
+      }));
+    }
 
     res.status(200).json({
       books,

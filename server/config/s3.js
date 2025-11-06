@@ -1,4 +1,5 @@
-import { S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { S3Client, DeleteObjectsCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl as awsGetSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const required = (name, fallback) => {
   const v = process.env[name] ?? fallback;
@@ -8,6 +9,8 @@ const required = (name, fallback) => {
 export const S3_REGION = required('AWS_REGION');
 export const S3_BUCKET = required('S3_BUCKET');
 export const S3_PREFIX = process.env.S3_PREFIX || 'uploads/books';
+export const S3_SIGNED_URLS = (process.env.S3_SIGNED_URLS || 'false').toLowerCase() === 'true';
+export const S3_SIGNED_TTL = parseInt(process.env.S3_SIGNED_TTL || '21600', 10); // 6 hours
 
 // Single shared S3 client; relies on default credentials chain (env vars or IAM role)
 export const s3 = new S3Client({
@@ -49,5 +52,24 @@ export async function deleteS3Objects(urls = []) {
   } catch (err) {
     console.error('[S3] delete error:', err?.message || err);
     return { deleted: 0, error: err?.message || String(err) };
+  }
+}
+
+// Generate a presigned GET URL if enabled; otherwise return the original URL
+export async function presignUrlIfEnabled(urlOrKey) {
+  try {
+    if (!S3_SIGNED_URLS) return urlOrKey;
+    if (!urlOrKey) return urlOrKey;
+
+    // If a full URL was stored, derive the key; if a key was stored, use it directly
+    const key = urlOrKey.startsWith('http') ? keyFromUrl(urlOrKey) : urlOrKey.replace(/^\//, '');
+    if (!key) return urlOrKey;
+
+    const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
+    const signed = await awsGetSignedUrl(s3, command, { expiresIn: S3_SIGNED_TTL });
+    return signed;
+  } catch (err) {
+    console.error('[S3] presign error:', err?.message || err);
+    return urlOrKey; // fall back to original
   }
 }
