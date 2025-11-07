@@ -29,24 +29,28 @@ const BookDetail = () => {
 
   // Process images array with useMemo to avoid initialization errors
   const images = useMemo(() => {
-    if (!book) return ['data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJvb2sgSW1hZ2U8L3RleHQ+PC9zdmc+'];
-    
-    let processedImages = [];
-    
-    if (book.images && Array.isArray(book.images) && book.images.length > 0) {
-      // If book.images is an array with items
-      processedImages = book.images.filter(img => img && img.trim() !== '');
-    } else if (book.imageUrl) {
-      // Fallback to single imageUrl
-      processedImages = [book.imageUrl];
+    // Default placeholder (safe data URL)
+    const placeholder = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJvb2sgSW1hZ2U8L3RleHQ+PC9zdmc+';
+    if (!book) return [placeholder];
+
+    const srcs = [];
+    if (Array.isArray(book.images) && book.images.length > 0) {
+      for (const entry of book.images) {
+        if (!entry) continue;
+        // Support both legacy string and new object form { original, thumb }
+        if (typeof entry === 'string') {
+          const s = entry.trim();
+          if (s) srcs.push(s);
+        } else if (typeof entry === 'object') {
+          const s = entry.thumb || entry.original || '';
+          if (typeof s === 'string' && s.trim()) srcs.push(s.trim());
+        }
+      }
+    } else if (book.imageUrl && typeof book.imageUrl === 'string') {
+      srcs.push(book.imageUrl);
     }
-    
-    // If no valid images found, use a guaranteed working SVG data URL
-    if (processedImages.length === 0) {
-      processedImages = ['data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJvb2sgSW1hZ2U8L3RleHQ+PC9zdmc+'];
-    }
-    
-    return processedImages;
+
+    return srcs.length ? srcs : [placeholder];
   }, [book]);
 
   useEffect(() => {
@@ -174,14 +178,14 @@ const BookDetail = () => {
 
 
   const nextImage = () => {
-    if (book?.images?.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % book.images.length);
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }
   };
 
   const prevImage = () => {
-    if (book?.images?.length > 1) {
-      setCurrentImageIndex((prev) => (prev - 1 + book.images.length) % book.images.length);
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     }
   };
 
