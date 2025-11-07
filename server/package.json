@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build-indexes": "node scripts/build-indexes.js"
+    "build-indexes": "node scripts/build-indexes.js",
+    "backfill-thumbnails": "node scripts/backfill-thumbnails.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
