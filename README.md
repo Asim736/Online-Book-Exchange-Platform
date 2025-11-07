@@ -224,3 +224,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ⭐ **If you found this project helpful, please give it a star!**
+
+## Amplify Hosting: SPA rewrites to fix 404 on deep links
+
+If you navigate directly to a client-side route like `https://www.exchangebook.me/browse/` and see a `404 (Not Found)` for the document request (often after a `301` to add a trailing slash), your host is trying to fetch a static file at `/browse/` instead of serving `index.html` and letting React Router handle routing.
+
+Fix this by adding Rewrites & Redirects in AWS Amplify Hosting (Console → Your app → Hosting → Rewrites and redirects):
+
+1) Catch‑all rewrite for SPA
+- Source address: `/<*>`
+- Target address: `/index.html`
+- Type: `200 (Rewrite)`
+
+2) Optional: normalize trailing slash for top-level routes
+- Source address: `/browse/`
+- Target address: `/browse`
+- Type: `301 (Permanent redirect)`
+
+Notes:
+- The rewrite must be handled by the host; client-side code cannot intercept a 404 before the bundle loads.
+- After adding the rules, direct navigation to any route (e.g., `/browse`, `/books/123`) should load `index.html` with a 200 and render correctly.
+- This repo also maps both `/browse` and `/browse/*` in `App.jsx` to tolerate trailing slashes once the host serves the SPA shell.

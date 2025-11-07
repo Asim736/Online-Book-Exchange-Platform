@@ -36,7 +36,9 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<div className="container"><HomePage /></div>} />
+            {/* Tolerate trailing slashes or nested segments if the host normalizes to /browse/ */}
             <Route path="/browse" element={<div className="container"><BookList /></div>} />
+            <Route path="/browse/*" element={<div className="container"><BookList /></div>} />
             <Route path="/login" element={<div className="container"><Login /></div>} />
             <Route path="/signup" element={<div className="container"><SignUp /></div>} />
             <Route path="/forgot-password" element={<div className="container"><ForgotPassword /></div>} />
