@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build-indexes": "node scripts/build-indexes.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

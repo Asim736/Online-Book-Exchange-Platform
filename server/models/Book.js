@@ -55,5 +55,8 @@ const bookSchema = new mongoose.Schema({
 
 // Compound index for search performance
 bookSchema.index({ title: 1, author: 1, genre: 1, location: 1 });
+// Performance index for listing newest available books
+// Speeds up queries like: find({ status: 'available' }).sort({ createdAt: -1 })
+bookSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.model('Book', bookSchema);
