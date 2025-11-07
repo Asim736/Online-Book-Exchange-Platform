@@ -14,13 +14,22 @@ function objectKey(req, file, cb) {
   cb(null, key);
 }
 
-const storage = multerS3({
-  s3,
-  bucket: S3_BUCKET,
-  contentType: multerS3.AUTO_CONTENT_TYPE,
-  cacheControl: 'public, max-age=31536000, immutable',
-  key: objectKey
-});
+// If S3 is not configured locally, fall back to in-memory storage so the server can start.
+// Upload endpoints will still accept files, but controllers should treat them as unsupported.
+const useS3 = Boolean(S3_BUCKET);
+let storage;
+if (useS3) {
+  storage = multerS3({
+    s3,
+    bucket: S3_BUCKET,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    cacheControl: 'public, max-age=31536000, immutable',
+    key: objectKey
+  });
+} else {
+  console.warn('[UPLOAD] S3_BUCKET not set. Using memoryStorage for uploads (local/dev).');
+  storage = multer.memoryStorage();
+}
 
 export const upload = multer({
   storage,
@@ -35,6 +44,9 @@ export const upload = multer({
     cb(new Error('Only JPEG, PNG, or WEBP images are allowed'));
   }
 });
+
+// Export a flag so other modules can detect if S3 uploads are active
+export const S3_UPLOADS_ENABLED = useS3;
 
 // NOTE: We still stream originals directly to S3 via multer-s3, then later
 // thumbnail generation reads them back. Future optimization: switch to

@@ -134,6 +134,7 @@ export const createBook = async (req, res) => {
       if (!u) return null;
       if (/^https?:\/\//i.test(u)) return u;
       const key = u.replace(/^\//, '');
+      if (!S3_BUCKET || !S3_REGION) return null; // Avoid constructing invalid URLs when S3 not configured
       return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
     };
     const imageEntries = [];
@@ -147,13 +148,13 @@ export const createBook = async (req, res) => {
       const entry = { original: originalUrl, thumb: thumbUrl };
       imageEntries.push(entry);
     }
-    console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
+  console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
 
     // Debug visibility for uploads (safe fields only)
     try {
       const count = Array.isArray(req.files) ? req.files.length : 0;
       const types = (req.files || []).map(f => f.mimetype);
-      console.log(`[UPLOAD] Received ${count} file(s) | types=${types.join(', ')} | urls=${uploadedUrls.length}`);
+      console.log(`[UPLOAD] Received ${count} file(s) | types=${types.join(', ')} | urls=${imageEntries.length}`);
     } catch (_) {}
 
     const bookData = {
@@ -218,6 +219,7 @@ export const updateBook = async (req, res) => {
           if (!u) return null;
           if (/^https?:\/\//i.test(u)) return u;
           const key = u.replace(/^\//, '');
+          if (!S3_BUCKET || !S3_REGION) return null;
           return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
         };
         const newEntries = [];
