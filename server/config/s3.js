@@ -61,8 +61,36 @@ export async function presignUrlIfEnabled(urlOrKey) {
     if (!S3_SIGNED_URLS) return urlOrKey;
     if (!urlOrKey) return urlOrKey;
 
-    // If a full URL was stored, derive the key; if a key was stored, use it directly
-    const key = urlOrKey.startsWith('http') ? keyFromUrl(urlOrKey) : urlOrKey.replace(/^\//, '');
+    // Only operate on string inputs; leave other types untouched
+    if (typeof urlOrKey !== 'string') return urlOrKey;
+
+    const val = urlOrKey.trim();
+    if (!val) return urlOrKey;
+
+    // Do NOT presign data: or blob: URLs (legacy base64 or in-memory blobs)
+    const lower = val.toLowerCase();
+    if (lower.startsWith('data:') || lower.startsWith('blob:')) return urlOrKey;
+
+    let key = null;
+    if (lower.startsWith('http')) {
+      // Only presign if the URL points to our S3 bucket host
+      const expectedHost = S3_BUCKET && S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : null;
+      try {
+        const u = new URL(val);
+        if (!expectedHost || u.hostname !== expectedHost) {
+          // Not our S3 host → return original URL unchanged
+          return urlOrKey;
+        }
+        key = decodeURIComponent(u.pathname.replace(/^\//, ''));
+      } catch {
+        // If URL parsing fails, fall back to returning as-is
+        return urlOrKey;
+      }
+    } else {
+      // Treat as a key string
+      key = val.replace(/^\//, '');
+    }
+
     if (!key) return urlOrKey;
 
     const command = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
