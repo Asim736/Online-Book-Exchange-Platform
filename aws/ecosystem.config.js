@@ -6,16 +6,17 @@ module.exports = {
   apps: [
     {
       name: 'bookexchange-api',
-      script: 'server/index.js',            // Entry script relative to cwd
-      cwd: '/var/www/bookexchange',        // Project root on EC2 (adjust if different)
-      instances: 1,                        // Can change to 'max' later if needed
-      exec_mode: 'fork',                   // Use 'cluster' if you want multi-process
+      script: 'index.js',                  // Server entrypoint
+      cwd: '/var/www/bookexchange/server', // Keep cwd at server/ so dotenv loads ./server/.env
+      instances: 1,
+      exec_mode: 'fork',
       autorestart: true,
       watch: false,
-      max_memory_restart: '300M',          // Lower for quicker restarts on leaks
+      max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production',
         PORT: 5001
+        // Other env vars are loaded from ./server/.env by dotenv
       },
       env_production: {
         NODE_ENV: 'production',
