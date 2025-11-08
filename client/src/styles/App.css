@@ -24,22 +24,24 @@ body {
   color: #2d3748;
 }
 
-/* Layout */
- /* .container {
-  max-width: 75rem; /* 1200px in rem for better zoom scaling 
+/* Layout (kept minimal; app-wide container rules live in index.css) */
+/*
+.container {
+  max-width: 75rem;  
   margin: 0 auto;
   padding: 0 1rem;
   width: 100%;
   box-sizing: border-box;
-} */
-/* 
+}
+
 .main-content {
   flex: 1;
   padding: 2rem;
   background: white;
   box-sizing: border-box;
   width: 100%;
-} */ */
+}
+*/
 
 /* Utility classes */
 .text-center {

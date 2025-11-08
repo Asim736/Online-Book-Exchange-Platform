@@ -7,8 +7,8 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import PrivateRoute from './components/Auth/PrivateRoute';
 import './styles/index.css';
 import './styles/App.css';
-import './components/Books/styles/BookCard.css';
-import './styles/zoom-responsive-override.css';
+// Removed global aggressive overrides to restore original layout & component styling
+// (BookCard styles are now scoped within its component; zoom override disabled)
 
 // Lazy load components
 const HomePage = React.lazy(() => import('./components/Home/HomePage'));

@@ -793,9 +793,6 @@
 /* MOBILE NATIVE DROPDOWN - Force Reset All Custom Styling */
 @media screen and (max-width: 768px) {
   .filter-select {
-    /* Nuclear option - reset everything and force native */
-    all: unset !important;
-    
     /* Rebuild with native mobile styling */
     appearance: auto !important;
     -webkit-appearance: menulist !important;

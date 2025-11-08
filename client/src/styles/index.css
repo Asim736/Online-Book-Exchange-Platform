@@ -66,9 +66,9 @@ body {
 
 .container {
   width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+  max-width: 1200px; /* restore centered max width */
+  margin: 0 auto;
+  padding: 0 1rem; /* breathing room */
 }
 
 /* Card Styles */
