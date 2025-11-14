@@ -13,6 +13,7 @@ const BookList = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalBooks, setTotalBooks] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const LIMIT = 12;
   const CACHE_KEY = 'browse_cache_v1';
   const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -256,9 +257,9 @@ const BookList = () => {
 
   return (
     <div className="book-list-container">
-      {/* Compact Context-Aware Search Bar */}
-      <div className="compact-search-container">
-        <div className="compact-search-bar">
+      {/* Compact Context-Aware Search Bar + Refresh control */}
+      <div className="compact-search-container" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="compact-search-bar" style={{ flex: 1 }}>
           
           {/* Context Selector */}
           <div className="search-context-selector">
@@ -346,14 +347,35 @@ const BookList = () => {
             </div>
           )}
           
-          {/* Refresh Button */}
-          <div style={{ marginLeft: '8px' }}>
-            <button type="button" className="btn-secondary" onClick={handleRefresh} title="Refresh list">
-              Refresh
-            </button>
-          </div>
-
         </div>
+        {/* Refresh Button (aligned to the right with small gap) */}
+        <button
+          type="button"
+          className={`refresh-btn ${refreshing ? 'is-loading' : ''}`}
+          onClick={async () => {
+            if (refreshing) return;
+            setRefreshing(true);
+            handleRefresh();
+            // handleRefresh triggers async fetch; poll loading state end
+            // ensure spinner stops after fetchBooks completes
+            const stop = () => setRefreshing(false);
+            // crude but reliable: wait for next microtask then observe loading change
+            Promise.resolve().then(() => {
+              const check = () => {
+                if (!loading) stop(); else setTimeout(check, 100);
+              };
+              check();
+            });
+          }}
+          aria-label="Refresh results"
+          title="Refresh results"
+        >
+          <svg className={`refresh-icon ${refreshing ? 'spin' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12a9 9 0 1 1-3.35-6.96"/>
+            <polyline points="21 3 21 9 15 9"/>
+          </svg>
+          <span style={{ marginLeft: 8 }}>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+        </button>
       </div>
 
       {/* Books Grid */}

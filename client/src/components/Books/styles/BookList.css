@@ -1772,3 +1772,35 @@
     font-size: 20px;
   }
 }
+
+/* Refresh button aligned with search bar */
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px; /* match .compact-search-bar */
+  padding: 0 16px;
+  margin-left: 12px;
+  border: none;
+  border-radius: 14px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(59,130,246,.25);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+
+.refresh-btn:hover { background: #2563eb; box-shadow: 0 8px 20px rgba(37,99,235,.3); }
+.refresh-btn:active { transform: translateY(1px); }
+.refresh-btn.is-loading { opacity: .9; cursor: progress; }
+
+.refresh-icon { display: inline-block; }
+@keyframes spin360 { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+.refresh-icon.spin { animation: spin360 0.8s linear infinite; }
+
+/* Responsive: keep button height in sync on smaller devices */
+@media (max-width: 576px) {
+  .refresh-btn { height: 48px; }
+}
