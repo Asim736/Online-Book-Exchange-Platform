@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../../config/constants.js';
 import BookCard from './BookCard';
 import { SkeletonCardGrid } from '../common/SkeletonCard';
 import './styles/BookList.css';
+import { getCache, setCache, isFresh, clearCache } from '../../utils/cache.js';
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
@@ -13,6 +14,8 @@ const BookList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalBooks, setTotalBooks] = useState(0);
   const LIMIT = 12;
+  const CACHE_KEY = 'browse_cache_v1';
+  const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
   
   // Compact search bar state
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +61,28 @@ const BookList = () => {
 
 
   useEffect(() => {
+    // Hydrate from cache if fresh; otherwise fetch
+    const cached = getCache(CACHE_KEY);
+    if (isFresh(cached, CACHE_TTL_MS)) {
+      try {
+        const pages = cached.pages || {};
+        // Combine pages in order 1..n that exist in cache
+        const orderedPages = Object.keys(pages)
+          .map(n => parseInt(n, 10))
+          .filter(n => Number.isFinite(n))
+          .sort((a, b) => a - b);
+        const combined = orderedPages.reduce((acc, n) => acc.concat(pages[n] || []), []);
+        setBooks(combined);
+        setPage(cached.page || orderedPages.at(-1) || 1);
+        setTotalPages(cached.totalPages || 1);
+        setTotalBooks(cached.totalBooks || combined.length);
+        setLoading(false);
+        // Optionally refresh in background later; for now, rely on TTL
+        return;
+      } catch (_) {
+        // Fall through to fetch on corruption
+      }
+    }
     fetchBooks(1, true);
   }, []);
 
@@ -97,6 +122,15 @@ const BookList = () => {
       setPage(data.page || fetchPage);
       setTotalPages(data.pages || 1);
       setTotalBooks(data.total || booksArray.length);
+
+      // Update cache: store per-page so navigation back is instant
+      const cached = getCache(CACHE_KEY) || { pages: {}, totalPages: 1, totalBooks: 0, page: 1, timestamp: 0 };
+      cached.pages[fetchPage] = booksArray;
+      cached.totalPages = data.pages || cached.totalPages;
+      cached.totalBooks = data.total || cached.totalBooks;
+      cached.page = data.page || fetchPage;
+      cached.timestamp = Date.now();
+      setCache(CACHE_KEY, cached);
     } catch (error) {
       console.error('Error fetching books:', error);
       setError(error.message);
@@ -110,6 +144,12 @@ const BookList = () => {
     if (page < totalPages) {
       fetchBooks(page + 1, false);
     }
+  };
+
+  // Manual refresh: clear cache and refetch first page
+  const handleRefresh = () => {
+    clearCache(CACHE_KEY);
+    fetchBooks(1, true);
   };
 
   // Handle search context selection
@@ -306,6 +346,13 @@ const BookList = () => {
             </div>
           )}
           
+          {/* Refresh Button */}
+          <div style={{ marginLeft: '8px' }}>
+            <button type="button" className="btn-secondary" onClick={handleRefresh} title="Refresh list">
+              Refresh
+            </button>
+          </div>
+
         </div>
       </div>
 
