@@ -2,7 +2,7 @@ import { useState, useEffect, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { API_BASE_URL } from "../../config/constants.js";
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import "./styles/BookCard.css";
+import styles from "./styles/BookCard.module.css";
 
 const BookCard = memo(({ book, priority = false }) => {
     const navigate = useNavigate();
@@ -95,13 +95,13 @@ const BookCard = memo(({ book, priority = false }) => {
     };
 
     return (
-        <div className="book-card" onClick={handleCardClick}>
+        <div className={styles['book-card']} onClick={handleCardClick}>
             {/* Book Image - Optimized with lazy loading and fixed dimensions */}
-            <div className="book-image-container">
+            <div className={styles['book-image-container']}>
                 <img
                     src={currentImage}
                     alt={book.title}
-                    className="book-cover"
+                    className={styles['book-cover']}
                     loading={priority ? "eager" : "lazy"}
                     width="320"
                     height="320"
@@ -117,7 +117,7 @@ const BookCard = memo(({ book, priority = false }) => {
                 {/* Wishlist Heart Button */}
                 {user && user._id !== book.owner?._id && (
                     <button 
-                        className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`}
+                        className={`${styles['wishlist-btn']} ${isWishlisted ? styles['wishlisted'] : ''}`}
                         onClick={handleWishlistToggle}
                         title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                         aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -132,14 +132,14 @@ const BookCard = memo(({ book, priority = false }) => {
                 {book.images && book.images.length > 1 && (
                     <>
                         <button 
-                            className="image-nav-btn prev-btn"
+                            className={`${styles['image-nav-btn']} ${styles['prev-btn']}`}
                             onClick={handlePrevImage}
                             aria-label="Previous image"
                         >
                             ‹
                         </button>
                         <button 
-                            className="image-nav-btn next-btn"
+                            className={`${styles['image-nav-btn']} ${styles['next-btn']}`}
                             onClick={handleNextImage}
                             aria-label="Next image"
                         >
@@ -150,14 +150,14 @@ const BookCard = memo(({ book, priority = false }) => {
             </div>
 
             {/* Book Info */}
-            <div className="book-info">
-                <h3 className="book-title">{book.title}</h3>
-                <p className="book-author">By {book.author}</p>
+            <div className={styles['book-info']}>
+                <h3 className={styles['book-title']}>{book.title}</h3>
+                <p className={styles['book-author']}>By {book.author}</p>
                 
                 {/* Meta Tags */}
-                <div className="book-meta">
-                    <span className="genre-tag">{book.genre || 'Bestseller'}</span>
-                    {book.volume && <span className="volume-tag">Volume</span>}
+                <div className={styles['book-meta']}>
+                    <span className={styles['genre-tag']}>{book.genre || 'Bestseller'}</span>
+                    {book.volume && <span className={styles['volume-tag']}>Volume</span>}
                 </div>
             </div>
         </div>
