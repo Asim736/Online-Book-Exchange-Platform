@@ -1301,6 +1301,9 @@
   padding: 0 20px;
   position: relative;
   z-index: 1000; /* Establish stacking context for search bar and dropdowns */
+  display: flex; /* Align refresh button beside the bar */
+  align-items: center;
+  gap: 12px;
 }
 
 .compact-search-bar {
@@ -1802,5 +1805,8 @@
 
 /* Responsive: keep button height in sync on smaller devices */
 @media (max-width: 576px) {
-  .refresh-btn { height: 48px; }
+  .compact-search-container { padding: 0 12px; gap: 8px; }
+  .compact-search-bar { min-height: 48px; }
+  .refresh-btn { height: 44px; padding: 0 12px; border-radius: 12px; }
+  .refresh-btn span { display: none; } /* icon-only on small screens */
 }
