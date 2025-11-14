@@ -1,10 +1,12 @@
+// Load env BEFORE anything else (ensures PM2 + ESM works consistently)
+import { ENV_PATH, validateS3Env } from './config/env.js';
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import cors from 'cors';
 
-// Load environment variables EARLY
-dotenv.config();
+console.log(`[BOOT] Using .env path: ${ENV_PATH}`);
+// Quick visibility that S3 variables are present at startup
+validateS3Env({ exitOnError: false });
 
 // Dynamically import routes AFTER env is loaded so any middleware
 // initialized at import time (e.g., multer-s3) can read process.env

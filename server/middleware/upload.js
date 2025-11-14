@@ -1,6 +1,7 @@
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { s3, S3_BUCKET, S3_PREFIX } from '../config/s3.js';
+import { validateS3Env } from '../config/env.js';
 
 // Generate unique keys: prefix/yyyy/mm/dd/uuid-filename
 function objectKey(req, file, cb) {
@@ -16,7 +17,8 @@ function objectKey(req, file, cb) {
 
 // If S3 is not configured locally, fall back to in-memory storage so the server can start.
 // Upload endpoints will still accept files, but controllers should treat them as unsupported.
-const useS3 = Boolean(S3_BUCKET);
+const { valid: s3EnvValid, summary } = validateS3Env({ exitOnError: false });
+const useS3 = Boolean(S3_BUCKET) && s3EnvValid;
 let storage;
 if (useS3) {
   storage = multerS3({
@@ -26,8 +28,9 @@ if (useS3) {
     cacheControl: 'public, max-age=31536000, immutable',
     key: objectKey
   });
+  console.log(`[UPLOAD] Using S3 storage | bucket=${S3_BUCKET} region=${process.env.AWS_REGION} prefix=${S3_PREFIX}`);
 } else {
-  console.warn('[UPLOAD] S3_BUCKET not set. Using memoryStorage for uploads (local/dev).');
+  console.warn(`[UPLOAD] Using memoryStorage. S3 disabled or misconfigured. Summary: ${JSON.stringify(summary)}`);
   storage = multer.memoryStorage();
 }
 
