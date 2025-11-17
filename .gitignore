@@ -103,6 +103,9 @@ Thumbs.db
 
 # Package manager lock files (optional, uncomment if needed)
 # package-lock.json
+.github/*
+.guide/*
+
 # yarn.lock
 
 # Security and sensitive documentation
