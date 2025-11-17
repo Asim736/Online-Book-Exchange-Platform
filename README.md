@@ -190,7 +190,7 @@ cd client && npm run dev   ```
 
 5. Start the server:
 
-*[coming soon (working on it)]*   ```
+   https://www.exchangebook.me/  ```
 
    node app.js
 
