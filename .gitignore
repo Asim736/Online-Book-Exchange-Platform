@@ -110,3 +110,6 @@ Thumbs.db
 
 # Security and sensitive documentation
 guide/SECURITY_SECRETS_GUIDE.md
+
+# Repository meta (ignore GitHub config directory)
+.github/
