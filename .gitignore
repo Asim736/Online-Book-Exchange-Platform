@@ -104,7 +104,9 @@ Thumbs.db
 # Package manager lock files (optional, uncomment if needed)
 # package-lock.json
 .github/*
-.guide/*
+guide/
+aws/
+MOBILE_TEST_REPORT.md
 
 # yarn.lock
 
