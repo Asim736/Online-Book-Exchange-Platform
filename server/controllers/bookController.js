@@ -24,14 +24,24 @@ export const getAllBooks = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 12;
     const skip = (page - 1) * limit;
 
-    // Filtering params
+    // Filtering params - sanitize user inputs to prevent NoSQL injection
   const filter = {};
   // Only show available books by default
   filter.status = 'available';
-  if (req.query.title) filter.title = { $regex: req.query.title, $options: 'i' };
-  if (req.query.author) filter.author = { $regex: req.query.author, $options: 'i' };
-  if (req.query.genre) filter.genre = req.query.genre;
-  if (req.query.location) filter.location = { $regex: req.query.location, $options: 'i' };
+  
+  // Sanitize and validate query parameters
+  if (req.query.title && typeof req.query.title === 'string') {
+    filter.title = { $regex: req.query.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  }
+  if (req.query.author && typeof req.query.author === 'string') {
+    filter.author = { $regex: req.query.author.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  }
+  if (req.query.genre && typeof req.query.genre === 'string') {
+    filter.genre = req.query.genre;
+  }
+  if (req.query.location && typeof req.query.location === 'string') {
+    filter.location = { $regex: req.query.location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+  }
 
     // Log query start
     const start = Date.now();
