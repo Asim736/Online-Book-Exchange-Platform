@@ -29,6 +29,9 @@ export const getAllBooks = async (req, res) => {
   // Only show available books by default
   filter.status = 'available';
   
+  // Whitelist of allowed filter fields
+  const allowedFilterFields = ['status', 'title', 'author', 'genre', 'location'];
+  
   // Sanitize and validate query parameters
   if (req.query.title && typeof req.query.title === 'string') {
     filter.title = { $regex: req.query.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
@@ -42,18 +45,26 @@ export const getAllBooks = async (req, res) => {
   if (req.query.location && typeof req.query.location === 'string') {
     filter.location = { $regex: req.query.location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
   }
+  
+  // Ensure only whitelisted fields are in the filter object
+  const sanitizedFilter = {};
+  for (const key of Object.keys(filter)) {
+    if (allowedFilterFields.includes(key)) {
+      sanitizedFilter[key] = filter[key];
+    }
+  }
 
     // Log query start
     const start = Date.now();
 
     let [books, total] = await Promise.all([
-      Book.find(filter)
+      Book.find(sanitizedFilter)
         .select('title author genre location images owner status createdAt')
         .populate('owner', 'username avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      Book.countDocuments(filter)
+      Book.countDocuments(sanitizedFilter)
     ]);
 
     // If presigned URLs are enabled, convert image URLs for each book
