@@ -111,18 +111,30 @@ export const updateProfile = async (req, res) => {
             return res.status(401).json({ message: 'User not authenticated' });
         }
 
+        // Strict whitelist of allowed fields to prevent NoSQL injection
+        const allowedFields = ['username', 'email', 'bio', 'contact', 'avatar'];
         const updateData = {};
+        
+        // Only allow explicitly whitelisted fields
         if (username && username.trim()) updateData.username = username.trim();
         if (email && email.trim()) updateData.email = email.trim();
         if (bio !== undefined) updateData.bio = bio;
         if (contact !== undefined) updateData.contact = contact;
-        if (avatar !== undefined) updateData.avatar = avatar; // Changed to handle null values
+        if (avatar !== undefined) updateData.avatar = avatar;
 
-        console.log('Update data:', JSON.stringify(updateData, null, 2));
+        // Ensure no MongoDB operators or other fields can be injected
+        const sanitizedUpdate = {};
+        for (const key of Object.keys(updateData)) {
+            if (allowedFields.includes(key) && typeof key === 'string' && !key.startsWith('$')) {
+                sanitizedUpdate[key] = updateData[key];
+            }
+        }
+
+        console.log('Update data:', JSON.stringify(sanitizedUpdate, null, 2));
 
         const user = await User.findByIdAndUpdate(
             userId,
-            updateData,
+            { $set: sanitizedUpdate },
             { new: true, runValidators: true }
         ).select('-password');
 
