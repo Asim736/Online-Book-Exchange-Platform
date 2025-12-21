@@ -74,7 +74,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-  margin: 0 auto;
+  margin: 1.5rem auto 0;
   display: block;
 }
 
