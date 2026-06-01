@@ -35,20 +35,3 @@ export function validateEnv(requiredKeys = [], { exitOnError = false, name = 'ru
   }
   return { ok, missing };
 }
-
-export function s3EnvSummary() {
-  return {
-    AWS_REGION: process.env.AWS_REGION || '(unset)',
-    S3_BUCKET: process.env.S3_BUCKET || '(unset)',
-    S3_PREFIX: process.env.S3_PREFIX || '(unset)',
-    S3_SIGNED_URLS: process.env.S3_SIGNED_URLS || 'false',
-  };
-}
-
-export function validateS3Env({ exitOnError = false } = {}) {
-  const required = ['AWS_REGION', 'S3_BUCKET'];
-  const res = validateEnv(required, { exitOnError, name: 'S3' });
-  const summary = s3EnvSummary();
-  console.log('[S3 ENV]', summary);
-  return { valid: res.ok, missing: res.missing, summary };
-}
