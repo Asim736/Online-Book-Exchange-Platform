@@ -115,15 +115,16 @@ export const createBook = async (req, res) => {
 
     const externalUrls = parseMaybeJson(req.body.externalUrls) || [];
 
-    // Gather uploaded image URLs from multer
+    // Convert uploaded images to Base64 strings
     const uploaded = Array.isArray(req.files) ? req.files : [];
     const imageEntries = [];
     for (const f of uploaded) {
-      if (f.path || f.location) {
-        imageEntries.push({ original: f.path || f.location, thumb: null });
+      if (f.buffer) {
+        const base64String = `data:${f.mimetype};base64,${f.buffer.toString('base64')}`;
+        imageEntries.push(base64String);
       }
     }
-    console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
+    console.log('[UPLOAD] Converted', imageEntries.length, 'image(s) to Base64');
 
     // Debug visibility for uploads (safe fields only)
     try {
@@ -192,11 +193,12 @@ export const updateBook = async (req, res) => {
         const uploaded = Array.isArray(req.files) ? req.files : [];
         const newEntries = [];
         for (const f of uploaded) {
-          if (f.path || f.location) {
-            newEntries.push({ original: f.path || f.location, thumb: null });
+          if (f.buffer) {
+            const base64String = `data:${f.mimetype};base64,${f.buffer.toString('base64')}`;
+            newEntries.push(base64String);
           }
         }
-        console.log('[UPLOAD] update newEntries:', JSON.stringify(newEntries));
+        console.log('[UPLOAD] update: converted', newEntries.length, 'new image(s) to Base64');
 
         const update = {
           title: req.body.title ?? book.title,
