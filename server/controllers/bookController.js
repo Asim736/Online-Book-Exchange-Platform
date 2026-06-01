@@ -14,7 +14,6 @@ export const getBooksByIds = async (req, res) => {
 };
 import Book from '../models/Book.js';
 import User from '../models/User.js';
-import { deleteS3Objects, S3_BUCKET, S3_REGION, presignUrlIfEnabled, S3_SIGNED_URLS, createThumbnailForKey } from '../config/s3.js';
 
 // Example usage
 export const getAllBooks = async (req, res) => {
@@ -67,25 +66,6 @@ export const getAllBooks = async (req, res) => {
       Book.countDocuments(sanitizedFilter)
     ]);
 
-    // If presigned URLs are enabled, convert image URLs for each book
-    if (S3_SIGNED_URLS) {
-      books = await Promise.all(books.map(async (b) => {
-        const signedImages = await Promise.all((b.images || []).map(async (u) => {
-          if (u && typeof u === 'object') {
-            return {
-              original: await presignUrlIfEnabled(u.original),
-              thumb: await presignUrlIfEnabled(u.thumb)
-            };
-          }
-          return presignUrlIfEnabled(u);
-        }));
-        // Avoid mutating Mongoose internals directly; toObject preserves lean copy
-        const copy = b.toObject();
-        copy.images = signedImages;
-        return copy;
-      }));
-    }
-
     // Log query end
     const duration = Date.now() - start;
     console.log(`[BOOKS] Query took ${duration}ms | Filter:`, filter);
@@ -107,26 +87,12 @@ export const getAllBooks = async (req, res) => {
 
 export const getBookById = async (req, res) => {
     try {
-        let book = await Book.findById(req.params.id)
-      .populate('owner', 'username email avatar bio');
+        const book = await Book.findById(req.params.id)
+          .populate('owner', 'username email avatar bio');
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
-        if (S3_SIGNED_URLS) {
-          const signedImages = await Promise.all((book.images || []).map(async (u) => {
-            if (u && typeof u === 'object') {
-              return {
-                original: await presignUrlIfEnabled(u.original),
-                thumb: await presignUrlIfEnabled(u.thumb)
-              };
-            }
-            return presignUrlIfEnabled(u);
-          }));
-      const copy = book.toObject();
-      copy.images = signedImages;
-      return res.status(200).json(copy);
-    }
-    res.status(200).json(book);
+        res.status(200).json(book);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -149,27 +115,15 @@ export const createBook = async (req, res) => {
 
     const externalUrls = parseMaybeJson(req.body.externalUrls) || [];
 
-    // Gather uploaded image URLs from multer-s3
-  const uploaded = Array.isArray(req.files) ? req.files : [];
-    const toUrl = (u) => {
-      if (!u) return null;
-      if (/^https?:\/\//i.test(u)) return u;
-      const key = u.replace(/^\//, '');
-      if (!S3_BUCKET || !S3_REGION) return null; // Avoid constructing invalid URLs when S3 not configured
-      return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
-    };
+    // Gather uploaded image URLs from multer
+    const uploaded = Array.isArray(req.files) ? req.files : [];
     const imageEntries = [];
     for (const f of uploaded) {
-      const key = (f.key || (f.location ? new URL(f.location).pathname.replace(/^\//, '') : null));
-      const originalUrl = toUrl(f.location || f.key || f.path);
-      let thumbUrl = null;
-      if (key) {
-        thumbUrl = await createThumbnailForKey(key);
+      if (f.path || f.location) {
+        imageEntries.push({ original: f.path || f.location, thumb: null });
       }
-      const entry = { original: originalUrl, thumb: thumbUrl };
-      imageEntries.push(entry);
     }
-  console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
+    console.log('[UPLOAD] imageEntries:', JSON.stringify(imageEntries));
 
     // Debug visibility for uploads (safe fields only)
     try {
@@ -236,23 +190,11 @@ export const updateBook = async (req, res) => {
 
         const existingImages = parseMaybeJson(req.body.existingImages) || book.images || [];
         const uploaded = Array.isArray(req.files) ? req.files : [];
-        const toUrl = (u) => {
-          if (!u) return null;
-          if (/^https?:\/\//i.test(u)) return u;
-          const key = u.replace(/^\//, '');
-          if (!S3_BUCKET || !S3_REGION) return null;
-          return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
-        };
         const newEntries = [];
         for (const f of uploaded) {
-          const key = (f.key || (f.location ? new URL(f.location).pathname.replace(/^\//, '') : null));
-          const originalUrl = toUrl(f.location || f.key || f.path);
-          let thumbUrl = null;
-          if (key) {
-            thumbUrl = await createThumbnailForKey(key);
+          if (f.path || f.location) {
+            newEntries.push({ original: f.path || f.location, thumb: null });
           }
-          const entry = { original: originalUrl, thumb: thumbUrl };
-          newEntries.push(entry);
         }
         console.log('[UPLOAD] update newEntries:', JSON.stringify(newEntries));
 
@@ -295,15 +237,9 @@ export const deleteBook = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this book' });
         }
 
-    // Best-effort: delete images from S3 (handle both string and object forms)
-    try {
-      const urls = (book.images || []).flatMap((u) => (typeof u === 'object' ? [u.original, u.thumb] : [u]));
-      await deleteS3Objects(urls);
-    } catch (e) { /* noop */ }
-
-    // Mongoose v7 removed document.remove(). Use deleteOne() or findByIdAndDelete
+    // Delete book from database
     await book.deleteOne();
-    res.status(200).json({ 
+    res.status(200).json({
       message: 'Book deleted successfully',
       id: book._id
     });
@@ -336,15 +272,6 @@ export const getUserBooks = async (req, res) => {
         .limit(limit),
       Book.countDocuments({ owner: req.user._id })
     ]);
-
-    if (S3_SIGNED_URLS) {
-      books = await Promise.all(books.map(async (b) => {
-        const signedImages = await Promise.all((b.images || []).map(u => presignUrlIfEnabled(u)));
-        const copy = b.toObject();
-        copy.images = signedImages;
-        return copy;
-      }));
-    }
 
     res.status(200).json({
       books,
