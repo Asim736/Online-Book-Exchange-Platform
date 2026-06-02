@@ -1,0 +1,117 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Production builds
+dist/
+build/
+dist-ssr/
+out/
+
+# Environment variables (CRITICAL: Never commit these)
+.env
+.env.*
+!.env.example
+server/.env
+client/.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by testing tools
+coverage/
+*.lcov
+.nyc_output/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Vite cache
+.vite/
+*.local
+
+# Next.js build output
+.next/
+
+# Nuxt.js build / generate output
+.nuxt/
+
+# Gatsby files
+.cache/
+
+# Svelte kit
+.svelte-kit/
+
+# Firebase cache
+.firebase/
+
+# TernJS port file
+.tern-port
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Package manager lock files (optional, uncomment if needed)
+# package-lock.json
+.github/*
+guide/
+aws/
+MOBILE_TEST_REPORT.md
+
+# yarn.lock
+
+# Security and sensitive documentation
+guide/SECURITY_SECRETS_GUIDE.md
+
+# Repository meta (ignore GitHub config directory)
+.github/
