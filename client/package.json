@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "lucide-react": "^0.545.0",
@@ -36,7 +38,7 @@
     "type": "git",
     "url": "git+https://github.com/yourusername/your-repo-name.git"
   },
-  "homepage": "https://github.com/yourusername/your-repo-name#readme",
+  "homepage": "https://Asim736.github.io/Online-Book-Exchange-Platform",
   "bugs": {
     "url": "https://github.com/yourusername/your-repo-name/issues"
   }
