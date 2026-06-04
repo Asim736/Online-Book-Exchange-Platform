@@ -91,6 +91,32 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Online Book Exchange Platform API',
+        version: '1.0.0',
+        status: 'running',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth/login (POST)',
+            books: '/api/books (GET/POST)',
+            users: '/api/users (GET/POST)',
+            exchanges: '/api/exchanges (GET/POST)',
+            requests: '/api/requests (GET/POST)'
+        }
+    });
+});
+
+// Catch-all for undefined GET routes - return helpful error
+app.get('*', (req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        message: `GET ${req.path} is not a valid endpoint`,
+        hint: 'Try POST /api/auth/login for authentication'
+    });
+});
+
 // Test user creation and login
 app.post('/api/test-user', async (req, res) => {
     try {
