@@ -26,9 +26,9 @@ export const createRequest = async (req, res) => {
 
 
 
-export const getRequestsForUser = async (req, res) => {
+export const getRequestsForOwner = async (req, res) => {
   try {
-    const ownerId = req.params.userId; // we get the userId from the URL param
+    const ownerId = req.params.userId;
 
     if (!ownerId) {
       return res.status(400).json({ error: "User ID is required" });
@@ -56,6 +56,41 @@ export const getRequestsForUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching requests:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Separate controller for outgoing requests (user as requester)
+export const getRequestsByRequester = async (req, res) => {
+  try {
+    const requesterId = req.params.userId;
+
+    if (!requesterId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    // Find all requests where user is the requester
+    const total = await Request.countDocuments({ requester: requesterId });
+    const requests = await Request.find({ requester: requesterId })
+      .populate('book', 'title images')
+      .populate('owner', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      requests,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error("Error fetching user requests:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
