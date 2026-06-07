@@ -32,15 +32,15 @@
     "frontend",
     "mern-stack"
   ],
-  "author": "Your Name",
+  "author": "Asim736",
   "license": "MIT",
   "description": "Book Exchange Platform - React Frontend",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/your-repo-name.git"
+    "url": "git+https://github.com/Asim736/Online-Book-Exchange-Platform.git"
   },
   "homepage": "https://Asim736.github.io/Online-Book-Exchange-Platform/",
   "bugs": {
-    "url": "https://github.com/yourusername/your-repo-name/issues"
+    "url": "https://github.com/Asim736/Online-Book-Exchange-Platform/issues"
   }
 }
