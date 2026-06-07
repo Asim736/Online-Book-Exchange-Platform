@@ -22,7 +22,7 @@
     "overrides": {
         "jws": "^4.0.1"
     },
-    "author": "Your Name",
+    "author": "Asim736",
     "license": "MIT",
     "keywords": [
         "book-exchange",
@@ -34,10 +34,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/yourusername/your-repo-name.git"
+        "url": "git+https://github.com/Asim736/Online-Book-Exchange-Platform.git"
     },
-    "homepage": "https://github.com/yourusername/your-repo-name#readme",
+    "homepage": "https://github.com/Asim736/Online-Book-Exchange-Platform#readme",
     "bugs": {
-        "url": "https://github.com/yourusername/your-repo-name/issues"
+        "url": "https://github.com/Asim736/Online-Book-Exchange-Platform/issues"
     }
 }
