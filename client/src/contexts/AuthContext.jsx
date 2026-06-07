@@ -24,120 +24,74 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
   };
 
-  // Check if backend server is available
-  const checkBackendAvailability = async () => {
-    try {
-      // Create a promise that rejects after timeout
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 2000)
-      );
-      
-      // Try to fetch from any endpoint to check if server is running
-      const fetchPromise = fetch(`${API_BASE_URL}/health`, {
-        method: 'GET'
-      });
-      
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
-      return response.ok;
-    } catch (error) {
-      console.log('Backend not available:', error.message);
-      return false;
-    }
-  };
-
-  // Clear any stored auth on app load if backend not available
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const isBackendAvailable = await checkBackendAvailability();
-      if (!isBackendAvailable && (token || user)) {
-        console.log('Backend not available on startup, clearing stored auth');
-        logout();
-      }
-    };
-    
-    initializeAuth();
-  }, []); // Run once on mount
-
-  // Add token validation
+  // Validate the stored token against the backend
   const validateToken = async () => {
     if (!token) return false;
     
-    // Skip validation if running frontend-only (no backend)
-    const isBackendAvailable = await checkBackendAvailability();
-    if (!isBackendAvailable) {
-      console.log('Backend not available, skipping token validation');
-      // Return false for frontend-only mode - require fresh login
-      return false;
-    }
-    
     try {
+      // Use a generous timeout for Render cold starts
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
       const response = await fetch(`${API_BASE_URL}/auth/validate`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },
-        credentials: 'include'
+        credentials: 'include',
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        // If 401, token is invalid, clear auth state
-        if (response.status === 401) {
-          console.log('Token expired or invalid, logging out...');
-          logout();
-        }
+      if (response.status === 401) {
+        console.log('Token expired or invalid, logging out...');
+        logout();
         return false;
       }
+
+      if (!response.ok) return false;
 
       const data = await response.json();
       return data.valid;
     } catch (error) {
-      // Network error or server unavailable
-      console.error('Token validation error (network issue):', error);
-      return false;
+      // Network error or server unavailable — don't clear auth, just mark as unauthenticated
+      console.warn('Token validation failed (network issue), keeping stored auth:', error.message);
+      return 'keep-auth'; // Special sentinel: don't logout, but don't authenticate either
     }
   };
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Always start with no authentication in frontend-only mode
       if (!token || !user) {
         setIsAuthenticated(false);
         return;
       }
 
-      // Check if backend is available first
-      const isBackendAvailable = await checkBackendAvailability();
+      const result = await validateToken();
       
-      if (!isBackendAvailable) {
-        console.log('Backend not available, clearing auth state for frontend-only mode');
-        // Clear authentication state when backend is not available
-        logout();
+      if (result === 'keep-auth') {
+        // Network issue — keep token/user in storage but mark as not authenticated
+        // User will be validated again on next page load
+        setIsAuthenticated(false);
         return;
       }
-
-      // Only validate token if backend is available
-      try {
-        const isValid = await validateToken();
-        setIsAuthenticated(isValid);
-        if (!isValid) {
-          logout();
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        logout();
+      
+      if (result) {
+        setIsAuthenticated(true);
+      } else {
+        // validateToken already calls logout() for 401, so just set state
+        setIsAuthenticated(false);
       }
     };
     
-    // Check authentication on load
     checkAuth();
   }, [token, user]);
 
+  // Sync token/user to localStorage — don't override auth state (checkAuth owns that)
   useEffect(() => {
     if (token && user) {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
     }
   }, [token, user]);
 
