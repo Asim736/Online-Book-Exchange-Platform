@@ -108,14 +108,12 @@ app.get('/', (req, res) => {
     });
 });
 
-// Catch-all for undefined GET routes - return helpful error
-app.get('*', (req, res) => {
-    res.status(404).json({
-        error: 'Not Found',
-        message: `GET ${req.path} is not a valid endpoint`,
-        hint: 'Try POST /api/auth/login for authentication'
-    });
-});
+// Routes (must be defined BEFORE the catch-all)
+app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/exchanges', exchangeRoutes);
+app.use("/api/requests", requestRoutes);
 
 // Test user creation and login
 app.post('/api/test-user', async (req, res) => {
@@ -157,12 +155,14 @@ app.post('/api/test-user', async (req, res) => {
     }
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/books', bookRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/exchanges', exchangeRoutes);
-app.use("/api/requests", requestRoutes);
+// Catch-all for undefined GET routes - return helpful error (must be LAST)
+app.get('*', (req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        message: `GET ${req.path} is not a valid endpoint`,
+        hint: 'Try POST /api/auth/login for authentication'
+    });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
