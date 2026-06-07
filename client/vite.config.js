@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/Online-Book-Exchange-Platform/',
+  base: '/',
   plugins: [react()],
   server: {
     hmr: {
