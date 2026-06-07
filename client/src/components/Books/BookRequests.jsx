@@ -40,8 +40,11 @@ const BookRequests = () => {
             }
             const data = await response.json();
 
+            // Backend returns { requests: [...], total, page, pages }
+            const requestsArray = Array.isArray(data) ? data : (data.requests || []);
+
             // Map backend request data to shape your component expects:
-            const formattedRequests = data.map((req) => ({
+            const formattedRequests = requestsArray.map((req) => ({
                 id: req._id,
                 bookId: req.book?._id,
                 bookCover: req.book?.images?.[0] || req.book?.imageUrl || "/placeholder-book.jpg",
@@ -83,8 +86,11 @@ const BookRequests = () => {
             }
             const data = await response.json();
 
+            // Backend returns { requests: [...], total, page, pages }
+            const requestsArray = Array.isArray(data) ? data : (data.requests || []);
+
             // Map backend request data to shape your component expects:
-            const formattedRequests = data.map((req) => ({
+            const formattedRequests = requestsArray.map((req) => ({
                 id: req._id,
                 bookId: req.book?._id,
                 bookCover: req.book?.images?.[0] || req.book?.imageUrl || "/placeholder-book.jpg",

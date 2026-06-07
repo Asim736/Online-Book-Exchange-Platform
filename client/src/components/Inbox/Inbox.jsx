@@ -103,14 +103,16 @@ const Inbox = () => {
           setIncomingRequests([]);
         }
       }
-      // Outgoing requests (not paginated yet)
+      // Outgoing requests (paginated response)
       const outgoingRes = await fetch(`${API_BASE_URL}/requests/user/${user._id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (outgoingRes.ok) {
         const outgoingData = await outgoingRes.json();
-        if (Array.isArray(outgoingData)) {
-          setOutgoingRequests(outgoingData.map(req => ({
+        // Backend returns { requests: [...], total, page, pages }
+        const outgoingArray = Array.isArray(outgoingData) ? outgoingData : (outgoingData.requests || []);
+        if (Array.isArray(outgoingArray)) {
+          setOutgoingRequests(outgoingArray.map(req => ({
             id: String(req._id || ''),
             bookId: String(req.book?._id || ''),
             bookTitle: String(req.book?.title || "Unknown Book"),
