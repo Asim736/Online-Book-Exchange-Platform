@@ -46,9 +46,7 @@ mongoose.connect(mongoUri, {
     console.log('✅ SUCCESS! MongoDB Connected!');
     console.log(`Database: ${mongoose.connection.name || 'bookexchange'}`);
     console.log('\n✅ Your credentials are CORRECT!');
-    console.log('Update your .env MONGODB_URI with:');
-    console.log(`mongodb+srv://${USERNAME}:${PASSWORD.slice(0, 3)}${'*'.repeat(PASSWORD.length - 3)}@bookexchangecluster.vrqhqv8.mongodb.net/bookexchange`);
-    console.log(`  (password masked — only ${PASSWORD.slice(0, 3)}*** shown)`);
+    console.log('Update your .env MONGODB_URI with the password you provided.');
     process.exit(0);
   })
   .catch((error) => {
