@@ -37,4 +37,16 @@ export const dataOperationLimiter = rateLimit({
   }
 });
 
+// Strict limiter for user creation (admin operation): 5 requests per 15 minutes
+export const userCreationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many user creation attempts',
+    message: 'You have exceeded the limit for creating users. Please try again later.'
+  }
+});
+
 
