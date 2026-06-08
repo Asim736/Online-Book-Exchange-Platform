@@ -1,19 +1,33 @@
+#!/usr/bin/env node
+/**
+ * Test MongoDB Connection
+ * Reads MONGODB_URI from the environment (loaded via .env or export)
+ *
+ * Usage: node test-connection.js
+ */
+
 import mongoose from 'mongoose';
+import '../config/env.js';
 
-const mongoUri = 'mongodb+srv://upskillasim_db_user:CHANGED_PASSWORD@bookexchangecluster.vrqhqv8.mongodb.net/bookexchange?appName=BookExchangeCluster';
+const mongoUri = process.env.MONGODB_URI;
 
-mongoose.connect(mongoUri)
+if (!mongoUri) {
+  console.error('❌ MONGODB_URI is not set. Check your .env file or environment variables.');
+  process.exit(1);
+}
+
+mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 })
   .then(() => {
     console.log('✅ MongoDB Connected Successfully!');
-    console.log('Database:', mongoose.connection.db.getName());
-    console.log('Collections:', Object.keys(mongoose.connection.collections));
+    const db = mongoose.connection.db;
+    if (db) {
+      console.log('Database:', db.databaseName);
+    }
     process.exit(0);
   })
   .catch((error) => {
     console.error('❌ MongoDB Connection Failed:');
     console.error('Error Type:', error.name);
     console.error('Error Message:', error.message);
-    console.error('Full Error:', error);
     process.exit(1);
   });
-  
