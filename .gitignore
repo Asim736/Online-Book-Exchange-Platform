@@ -104,6 +104,7 @@ Thumbs.db
 # Package manager lock files (optional, uncomment if needed)
 # package-lock.json
 .github/*
+!.github/dependabot.yml
 guide/
 aws/
 MOBILE_TEST_REPORT.md
@@ -113,5 +114,4 @@ MOBILE_TEST_REPORT.md
 # Security and sensitive documentation
 guide/SECURITY_SECRETS_GUIDE.md
 
-# Repository meta (ignore GitHub config directory)
-.github/
+
