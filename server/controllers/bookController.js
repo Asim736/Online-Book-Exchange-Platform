@@ -87,7 +87,7 @@ export const getAllBooks = async (req, res) => {
 
 export const getBookById = async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id)
+        const book = await Book.findById({ $eq: req.params.id })
           .populate('owner', 'username email avatar bio');
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
@@ -173,7 +173,7 @@ export const createBook = async (req, res) => {
 
 export const updateBook = async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id);
+        const book = await Book.findById({ $eq: req.params.id });
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }
@@ -213,7 +213,7 @@ export const updateBook = async (req, res) => {
         };
 
         const updatedBook = await Book.findByIdAndUpdate(
-            req.params.id,
+            { $eq: req.params.id },
             { $set: update },
             { new: true }
         ).populate('owner', 'username email avatar bio');
@@ -229,7 +229,7 @@ export const updateBook = async (req, res) => {
 
 export const deleteBook = async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id);
+        const book = await Book.findById({ $eq: req.params.id });
         if (!book) {
             return res.status(404).json({ message: 'Book not found' });
         }

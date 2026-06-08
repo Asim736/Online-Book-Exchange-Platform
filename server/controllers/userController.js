@@ -14,7 +14,7 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findById({ $eq: req.params.id }).select('-password');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -36,7 +36,19 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // Whitelist allowed fields to prevent NoSQL injection
+        const allowedFields = ['username', 'email', 'bio', 'avatar'];
+        const sanitized = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) {
+                sanitized[key] = req.body[key];
+            }
+        }
+        const user = await User.findByIdAndUpdate(
+            { $eq: req.params.id },
+            { $set: sanitized },
+            { new: true, runValidators: true }
+        );
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -48,7 +60,7 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const user = await User.findByIdAndDelete({ $eq: req.params.id });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

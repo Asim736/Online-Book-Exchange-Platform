@@ -107,7 +107,7 @@ export const updateRequestStatus = async (req, res) => {
 
     try {
         const updatedRequest = await Request.findByIdAndUpdate(
-            id,
+            { $eq: id },
             { status },
             { new: true }
         ).populate('book requester owner');
@@ -120,7 +120,7 @@ export const updateRequestStatus = async (req, res) => {
         if (status === 'accepted' && updatedRequest.book) {
             const Book = (await import('../models/Book.js')).default;
             await Book.findByIdAndUpdate(
-                updatedRequest.book._id,
+                { $eq: updatedRequest.book._id },
                 { status: 'exchanged' },
                 { new: true }
             );

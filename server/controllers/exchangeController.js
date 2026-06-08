@@ -16,7 +16,7 @@ export const getAllExchanges = async (req, res) => {
 
 export const getExchangeById = async (req, res) => {
     try {
-        const exchange = await Exchange.findById(req.params.id)
+        const exchange = await Exchange.findById({ $eq: req.params.id })
             .populate('requestor', 'username email')
             .populate('owner', 'username email')
             .populate('requestedBook')
@@ -55,7 +55,7 @@ export const createExchange = async (req, res) => {
 export const updateExchangeStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const exchange = await Exchange.findById(req.params.id);
+        const exchange = await Exchange.findById({ $eq: req.params.id });
         
         if (!exchange) {
             return res.status(404).json({ message: 'Exchange not found' });
@@ -88,7 +88,7 @@ export const updateExchangeStatus = async (req, res) => {
 
 export const deleteExchange = async (req, res) => {
     try {
-        const exchange = await Exchange.findById(req.params.id);
+        const exchange = await Exchange.findById({ $eq: req.params.id });
         if (!exchange) {
             return res.status(404).json({ message: 'Exchange not found' });
         }
