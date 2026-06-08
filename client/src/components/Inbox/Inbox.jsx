@@ -31,6 +31,13 @@ const Inbox = () => {
   
   // Messages data - simplified structure for now
   const [messages, setMessages] = useState({});
+
+  // Error states
+  const [conversationsError, setConversationsError] = useState(null);
+  const [requestsError, setRequestsError] = useState(null);
+  
+  // Search
+  const [searchQuery, setSearchQuery] = useState('');
   
   const chatBoxRef = useRef(null);
 
@@ -49,6 +56,8 @@ const Inbox = () => {
   // Fetch requests and conversations data on component mount
   useEffect(() => {
     if (user?._id && token && typeof user._id === 'string') {
+      setConversationsError(null);
+      setRequestsError(null);
       fetchRequests(1);
       fetchConversations(1);
     } else {
@@ -130,6 +139,7 @@ const Inbox = () => {
       }
     } catch (error) {
       console.error("Error fetching requests:", error);
+      setRequestsError(error.message || 'Failed to load requests. Please try again.');
     } finally {
       setRequestsLoading(false);
     }
@@ -137,6 +147,7 @@ const Inbox = () => {
 
   const fetchConversations = async (page = 1) => {
     setConversationsLoading(true);
+    setConversationsError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/requests/conversations/${user._id}?page=${page}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -200,6 +211,7 @@ const Inbox = () => {
       }
     } catch (error) {
       console.error("Error fetching conversations:", error);
+      setConversationsError(error.message || 'Failed to load conversations. Please try again.');
     } finally {
       setConversationsLoading(false);
     }
@@ -334,7 +346,37 @@ const Inbox = () => {
     );
   }
 
-  const selectedContact = conversations.find(c => c.id === selectedChat) || conversations[0];
+  const selectedContact = conversations.find(c => c.id === selectedChat) || conversations[0] || null;
+
+  // Filter conversations by search query
+  const filteredConversations = searchQuery.trim()
+    ? conversations.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.book?.title?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : conversations;
+
+  // Show error state if API failed
+  if (conversationsError && conversations.length === 0) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <div className="text-center">
+          <div className="mb-3">
+            <svg width="48" height="48" fill="#dc3545" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+            </svg>
+          </div>
+          <h5>Failed to load conversations</h5>
+          <p className="text-muted">{conversationsError}</p>
+          <button className="btn btn-primary mt-2" onClick={() => fetchConversations(1)}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading if conversations are still loading
   if (conversationsLoading) {
@@ -709,11 +751,21 @@ const Inbox = () => {
             <div className="col-md-4 col-lg-3 sidebar left-sidebar">
               <div className="search-section">
                 <h4 className="mb-4 fw-bold" style={{ color: '#1f2937', fontSize: '24px', fontWeight: '600' }}>Inbox</h4>
-                <input type="text" className="search-bar" placeholder="Search conversations..." />
+                <input 
+                  type="text" 
+                  className="search-bar form-control mb-3" 
+                  placeholder="Search conversations..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
               <div className="contacts-list">
 
-                {conversations.map((contact) => (
+                {filteredConversations.length === 0 && searchQuery.trim() ? (
+                  <div className="text-center text-muted py-4">
+                    <small>No conversations match "{searchQuery}"</small>
+                  </div>
+                ) : filteredConversations.map((contact) => (
                   <div
                     key={contact.id}
                     className={`contact-item d-flex align-items-start p-3 mb-2 rounded ${selectedChat === contact.id ? 'active' : ''}`}

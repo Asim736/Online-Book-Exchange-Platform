@@ -48,11 +48,15 @@ export const getRequestsForOwner = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Filter out requests with missing populated data
+    const safeRequests = requests.filter(r => r.requester && r.book);
+    const filteredTotal = safeRequests.length;
+
     res.json({
-      requests,
-      total,
+      requests: safeRequests,
+      total: filteredTotal,
       page,
-      pages: Math.ceil(total / limit)
+      pages: Math.ceil(filteredTotal / limit) || 1
     });
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -83,11 +87,14 @@ export const getRequestsByRequester = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Filter out requests with missing populated data
+    const safeRequests = requests.filter(r => r.owner && r.book);
+
     res.json({
-      requests,
-      total,
+      requests: safeRequests,
+      total: safeRequests.length,
       page,
-      pages: Math.ceil(total / limit)
+      pages: Math.ceil(safeRequests.length / limit) || 1
     });
   } catch (error) {
     console.error("Error fetching user requests:", error);

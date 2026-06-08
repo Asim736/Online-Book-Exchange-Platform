@@ -88,15 +88,19 @@ export const getUserMessages = async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(5);
 
-        const messages = recentRequests.map(request => {
-            const otherUser = request.requester._id.toString() === userId ? request.owner : request.requester;
+        const messages = recentRequests
+          .filter(request => request.requester && request.owner && request.book)
+          .map(request => {
+            const requesterId = request.requester._id ? request.requester._id.toString() : null;
+            const ownerId = request.owner._id ? request.owner._id.toString() : null;
+            const otherUser = requesterId === userId ? request.owner : request.requester;
             return {
                 id: request._id,
-                userName: otherUser.username,
-                avatar: `https://images.unsplash.com/photo-150716231${Math.floor(Math.random() * 10)}?w=150&h=150&fit=crop&crop=face`,
-                lastMessage: request.message || `Interested in "${request.book.title}"`,
+                userName: otherUser?.username || 'Unknown',
+                avatar: `https://i.pravatar.cc/150?u=${otherUser?.email || 'unknown'}`,
+                lastMessage: request.message || (request.book?.title ? `Interested in "${request.book.title}"` : 'Book request'),
                 timestamp: request.createdAt,
-                bookTitle: request.book.title
+                bookTitle: request.book?.title || 'Unknown Book'
             };
         });
 

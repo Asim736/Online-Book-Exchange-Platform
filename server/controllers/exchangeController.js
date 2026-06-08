@@ -62,6 +62,9 @@ export const updateExchangeStatus = async (req, res) => {
         }
 
         // Check if user is the owner of the requested book
+        if (!exchange.owner) {
+            return res.status(400).json({ message: 'Exchange owner data is missing' });
+        }
         if (exchange.owner.toString() !== req.user.id) {
             return res.status(403).json({ message: 'Not authorized to update this exchange' });
         }
@@ -94,7 +97,12 @@ export const deleteExchange = async (req, res) => {
         }
 
         // Check if user is either the requestor or owner
-        if (![exchange.requestor.toString(), exchange.owner.toString()].includes(req.user.id)) {
+        const requestorId = exchange.requestor ? exchange.requestor.toString() : null;
+        const ownerId = exchange.owner ? exchange.owner.toString() : null;
+        if (!requestorId && !ownerId) {
+            return res.status(400).json({ message: 'Exchange participant data is missing' });
+        }
+        if (![requestorId, ownerId].includes(req.user.id)) {
             return res.status(403).json({ message: 'Not authorized to delete this exchange' });
         }
 

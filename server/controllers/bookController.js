@@ -179,6 +179,9 @@ export const updateBook = async (req, res) => {
         }
         
         // Check if user is the owner
+        if (!book.owner) {
+            return res.status(400).json({ message: 'Book owner data is missing' });
+        }
         if (book.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to update this book' });
         }
@@ -235,6 +238,9 @@ export const deleteBook = async (req, res) => {
         }
 
         // Check if user is the owner
+        if (!book.owner) {
+            return res.status(400).json({ message: 'Book owner data is missing' });
+        }
         if (book.owner.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to delete this book' });
         }
