@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import { authenticateToken } from '../middleware/auth.js';
-import { bookOperationLimiter } from '../middleware/rateLimiter.js';
+import { bookOperationLimiter, deleteOperationLimiter } from '../middleware/rateLimiter.js';
 import { 
     getAllBooks, 
     getBookById, 
@@ -30,6 +30,6 @@ router.use(authenticateToken);
 router.post('/', bookOperationLimiter, upload.array('images', 3), createBook);
 // Update can also accept additional images
 router.put('/:id', bookOperationLimiter, upload.array('images', 3), updateBook);
-router.delete('/:id', deleteBook);
+router.delete('/:id', deleteOperationLimiter, deleteBook);
 
 export default router;

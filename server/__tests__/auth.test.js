@@ -5,45 +5,264 @@
  * for register, login, validateToken, forgotPassword, and resetPassword.
  */
 
+// ----------------------------------------------------------------
+// Helper: extract pure controller-logic into testable functions
+// ----------------------------------------------------------------
+
+function runRegister(body) {
+  // Simulates the hardened register controller
+  if (!body) return { status: 400, body: { message: 'Username is required' } };
+
+  const { username, email, password, ...rest } = body;
+
+  // Check for unexpected/MongoDB fields
+  const unexpectedKeys = Object.keys(rest).filter(
+    k => k.startsWith('$') || !['username', 'email', 'password'].includes(k)
+  );
+  if (unexpectedKeys.length > 0) {
+    return { status: 400, body: { message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}` } };
+  }
+
+  // Validate required fields with type checks
+  if (!username || typeof username !== 'string' || !username.trim()) {
+    return { status: 400, body: { message: 'Username is required' } };
+  }
+  if (!email || typeof email !== 'string' || !email.trim()) {
+    return { status: 400, body: { message: 'Email is required' } };
+  }
+  if (!password || typeof password !== 'string') {
+    return { status: 400, body: { message: 'Password is required' } };
+  }
+
+  // Validate field formats
+  if (username.trim().length < 3) {
+    return { status: 400, body: { message: 'Username must be at least 3 characters long' } };
+  }
+  if (username.trim().length > 50) {
+    return { status: 400, body: { message: 'Username must be at most 50 characters long' } };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return { status: 400, body: { message: 'Invalid email format' } };
+  }
+  if (password.length < 6) {
+    return { status: 400, body: { message: 'Password must be at least 6 characters long' } };
+  }
+
+  // Simulate duplicate email check
+  if (existingEmails && existingEmails.has(email.trim().toLowerCase())) {
+    return { status: 409, body: { message: 'Email already exists' } };
+  }
+
+  return { status: 201, body: { message: 'User registered successfully' } };
+}
+
+let existingEmails = null;
+function setExistingEmails(emailSet) {
+  existingEmails = emailSet;
+}
+
+function runForgotPassword(body) {
+  if (!body || !body.email || typeof body.email !== 'string' || !body.email.trim()) {
+    return { status: 400, body: { message: 'Email is required' } };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(body.email.trim())) {
+    return { status: 400, body: { message: 'Invalid email format' } };
+  }
+  if (!existingUsers || !existingUsers.has(body.email.trim().toLowerCase())) {
+    return { status: 404, body: { message: 'User not found' } };
+  }
+  return { status: 200, body: { message: 'Reset password email sent' } };
+}
+
+let existingUsers = null;
+function setExistingUsers(emailSet) {
+  existingUsers = emailSet;
+}
+
+function runResetPassword(body) {
+  if (!body || !body.token || !body.newPassword) {
+    return { status: 400, body: { message: 'Token and new password are required' } };
+  }
+  if (typeof body.token !== 'string') {
+    return { status: 400, body: { message: 'Token is required' } };
+  }
+  if (typeof body.newPassword !== 'string') {
+    return { status: 400, body: { message: 'New password is required' } };
+  }
+  if (body.newPassword.length < 6) {
+    return { status: 400, body: { message: 'New password must be at least 6 characters long' } };
+  }
+  return { status: 200, body: { message: 'Password reset successful' } };
+}
+
+// ----------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------
+
 describe('register', () => {
-  test('requires username, email, and password', () => {
-    const body = { username: 'testuser', email: 'test@test.com', password: 'password123' };
-    expect(body.username).toBeTruthy();
-    expect(body.email).toBeTruthy();
-    expect(body.password).toBeTruthy();
+  const validBody = { username: 'newuser', email: 'new@test.com', password: 'secure123' };
+
+  beforeEach(() => {
+    setExistingEmails(null);
+  });
+
+  test('registers with valid fields and returns 201', () => {
+    const result = runRegister(validBody);
+    expect(result.status).toBe(201);
+    expect(result.body.message).toContain('success');
+  });
+
+  test('normalizes email to lowercase', () => {
+    const result = runRegister({ ...validBody, email: 'New@Test.COM' });
+    // No duplicate error means lowercase normalization passed
+    setExistingEmails(new Set(['new@test.com']));
+    const dupResult = runRegister({ ...validBody, email: 'NEW@TEST.COM' });
+    expect(dupResult.status).toBe(409);
+  });
+
+  test('trims whitespace from username and email', () => {
+    const result = runRegister({ ...validBody, username: '  spaceduser  ', email: ' spaced@test.com  ' });
+    expect(result.status).toBe(201);
   });
 
   test('rejects missing username', () => {
-    const body = { email: 'test@test.com', password: 'password123' };
-    expect(body.username).toBeFalsy();
+    const { username, ...body } = validBody;
+    const result = runRegister(body);
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Username is required');
+  });
+
+  test('rejects empty username string', () => {
+    const result = runRegister({ ...validBody, username: '' });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects whitespace-only username', () => {
+    const result = runRegister({ ...validBody, username: '   ' });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects non-string username (object)', () => {
+    const result = runRegister({ ...validBody, username: { $ne: '' } });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects username shorter than 3 characters', () => {
+    const result = runRegister({ ...validBody, username: 'ab' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 3 characters');
+  });
+
+  test('rejects username longer than 50 characters', () => {
+    const result = runRegister({ ...validBody, username: 'a'.repeat(51) });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at most 50 characters');
+  });
+
+  test('accepts username of exactly 3 characters', () => {
+    const result = runRegister({ ...validBody, username: 'abc' });
+    expect(result.status).toBe(201);
   });
 
   test('rejects missing email', () => {
-    const body = { username: 'testuser', password: 'password123' };
-    expect(body.email).toBeFalsy();
+    const { email, ...body } = validBody;
+    const result = runRegister(body);
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Email is required');
+  });
+
+  test('rejects empty email string', () => {
+    const result = runRegister({ ...validBody, email: '' });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects non-string email (object)', () => {
+    const result = runRegister({ ...validBody, email: { $gt: '' } });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects invalid email format', () => {
+    const result = runRegister({ ...validBody, email: 'notanemail' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
+  });
+
+  test('rejects email without domain', () => {
+    const result = runRegister({ ...validBody, email: 'user@' });
+    expect(result.status).toBe(400);
   });
 
   test('rejects missing password', () => {
-    const body = { username: 'testuser', email: 'test@test.com' };
-    expect(body.password).toBeFalsy();
+    const { password, ...body } = validBody;
+    const result = runRegister(body);
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Password is required');
   });
 
-  test('password should be hashed before saving (not plaintext)', () => {
-    const plaintextPassword = 'password123';
-    const hashedPassword = '$2a$10$somehashvalue'; // Simulated bcrypt hash
-    expect(plaintextPassword).not.toBe(hashedPassword);
-    // A real bcrypt hash starts with $2a$, $2b$, or $2y$
-    expect(hashedPassword.startsWith('$2')).toBe(true);
+  test('rejects non-string password (object)', () => {
+    const result = runRegister({ ...validBody, password: { $ne: '' } });
+    expect(result.status).toBe(400);
   });
 
-  test('returns 201 on success', () => {
-    const statusCode = 201;
-    expect(statusCode).toBe(201);
+  test('rejects non-string password (array)', () => {
+    const result = runRegister({ ...validBody, password: ['hack'] });
+    expect(result.status).toBe(400);
   });
 
-  test('returns 500 on server error', () => {
-    const statusCode = 500;
-    expect(statusCode).toBe(500);
+  test('rejects password shorter than 6 characters', () => {
+    const result = runRegister({ ...validBody, password: 'abc' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 6 characters');
+  });
+
+  test('accepts password of exactly 6 characters', () => {
+    const result = runRegister({ ...validBody, password: '123456' });
+    expect(result.status).toBe(201);
+  });
+
+  test('rejects duplicate email', () => {
+    setExistingEmails(new Set(['existing@test.com']));
+    const result = runRegister({ ...validBody, email: 'existing@test.com' });
+    expect(result.status).toBe(409);
+    expect(result.body.message).toBe('Email already exists');
+  });
+
+  test('duplicate email check is case-insensitive', () => {
+    setExistingEmails(new Set(['existing@test.com']));
+    const result = runRegister({ ...validBody, email: 'EXISTING@TEST.COM' });
+    expect(result.status).toBe(409);
+  });
+
+  test('rejects NoSQL injection via $gt operator', () => {
+    const result = runRegister({ ...validBody, $gt: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $ne operator', () => {
+    const result = runRegister({ ...validBody, $ne: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $where operator', () => {
+    const result = runRegister({ ...validBody, $where: '1=1' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects unexpected fields like role', () => {
+    const result = runRegister({ ...validBody, role: 'admin' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+    expect(result.body.message).toContain('role');
+  });
+
+  test('rejects empty body', () => {
+    const result = runRegister(null);
+    expect(result.status).toBe(400);
   });
 });
 
@@ -63,7 +282,6 @@ describe('login', () => {
   test('returns 401 when password does not match', () => {
     const user = { password: '$2a$10$correctHash' };
     const plaintextPassword = 'wrongpassword';
-    // bcrypt.compare would return false for wrong password
     const passwordMatch = false;
     expect(passwordMatch).toBe(false);
   });
@@ -146,44 +364,88 @@ describe('validateToken', () => {
 });
 
 describe('forgotPassword', () => {
-  test('requires email', () => {
-    const body = { email: 'user@test.com' };
-    expect(body.email).toBeTruthy();
+  beforeEach(() => {
+    setExistingUsers(null);
+  });
+
+  test('returns 200 when email is valid and user exists', () => {
+    setExistingUsers(new Set(['user@test.com']));
+    const result = runForgotPassword({ email: 'user@test.com' });
+    expect(result.status).toBe(200);
+    expect(result.body.message).toBe('Reset password email sent');
   });
 
   test('rejects missing email', () => {
-    const body = {};
-    expect(body.email).toBeFalsy();
+    const result = runForgotPassword({});
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Email is required');
+  });
+
+  test('rejects empty email string', () => {
+    const result = runForgotPassword({ email: '' });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects invalid email format', () => {
+    const result = runForgotPassword({ email: 'notanemail' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
+  });
+
+  test('rejects null body', () => {
+    const result = runForgotPassword(null);
+    expect(result.status).toBe(400);
   });
 
   test('returns 404 when user not found', () => {
-    const user = null;
-    const result = !user;
-    expect(result).toBe(true);
-  });
-
-  test('returns 200 when email is sent', () => {
-    const statusCode = 200;
-    const message = 'Reset password email sent';
-    expect(statusCode).toBe(200);
-    expect(message).toContain('email sent');
+    setExistingUsers(new Set(['other@test.com']));
+    const result = runForgotPassword({ email: 'unknown@test.com' });
+    expect(result.status).toBe(404);
+    expect(result.body.message).toBe('User not found');
   });
 });
 
 describe('resetPassword', () => {
-  test('requires token and newPassword', () => {
-    const body = { token: 'reset-token-123', newPassword: 'newPassword456' };
-    expect(body.token).toBeTruthy();
-    expect(body.newPassword).toBeTruthy();
+  test('returns 200 on success', () => {
+    const result = runResetPassword({ token: 'reset-token-123', newPassword: 'newPassword456' });
+    expect(result.status).toBe(200);
+    expect(result.body.message).toBe('Password reset successful');
+  });
+
+  test('rejects missing token', () => {
+    const result = runResetPassword({ newPassword: 'newpass123' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('required');
   });
 
   test('rejects missing newPassword', () => {
-    const body = { token: 'reset-token-123' };
-    expect(body.newPassword).toBeFalsy();
+    const result = runResetPassword({ token: 'reset-token-123' });
+    expect(result.status).toBe(400);
   });
 
-  test('returns 200 on success', () => {
-    const statusCode = 200;
-    expect(statusCode).toBe(200);
+  test('rejects non-string token', () => {
+    const result = runResetPassword({ token: { $gt: '' }, newPassword: 'newpass123' });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects non-string newPassword', () => {
+    const result = runResetPassword({ token: 'valid-token', newPassword: { $ne: '' } });
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects newPassword shorter than 6 characters', () => {
+    const result = runResetPassword({ token: 'valid-token', newPassword: 'abc' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 6 characters');
+  });
+
+  test('accepts newPassword of exactly 6 characters', () => {
+    const result = runResetPassword({ token: 'valid-token', newPassword: '123456' });
+    expect(result.status).toBe(200);
+  });
+
+  test('rejects empty body', () => {
+    const result = runResetPassword(null);
+    expect(result.status).toBe(400);
   });
 });

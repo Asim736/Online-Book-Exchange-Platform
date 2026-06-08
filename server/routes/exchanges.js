@@ -1,4 +1,5 @@
 import express from 'express';
+import { deleteOperationLimiter } from '../middleware/rateLimiter.js';
 import {
     getAllExchanges,
     getExchangeById,
@@ -22,6 +23,6 @@ router.post('/', createExchange);
 router.put('/:id/status', updateExchangeStatus);
 
 // DELETE exchange
-router.delete('/:id', deleteExchange);
+router.delete('/:id', deleteOperationLimiter, deleteExchange);
 
 export default router;

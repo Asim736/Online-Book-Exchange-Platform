@@ -73,4 +73,16 @@ export const bookOperationLimiter = rateLimit({
   }
 });
 
+// Strict limiter for destructive operations (delete): 5 requests per 15 minutes
+export const deleteOperationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many delete attempts',
+    message: 'You have exceeded the limit for delete operations. Please try again later.'
+  }
+});
+
 

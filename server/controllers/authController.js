@@ -4,15 +4,61 @@ import jwt from 'jsonwebtoken';
 
 // Register a new user
 export const register = async (req, res) => {
-    const { username, email, password } = req.body;
-
     try {
+        // Destructure only allowed fields to prevent NoSQL injection
+        const { username, email, password, ...rest } = req.body;
+
+        // Check for unexpected/MongoDB fields in the request
+        const unexpectedKeys = Object.keys(rest).filter(
+            k => k.startsWith('$') || !['username', 'email', 'password'].includes(k)
+        );
+        if (unexpectedKeys.length > 0) {
+            return res.status(400).json({
+                message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}`
+            });
+        }
+
+        // Validate required fields
+        if (!username || typeof username !== 'string' || !username.trim()) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+        if (!email || typeof email !== 'string' || !email.trim()) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        if (!password || typeof password !== 'string') {
+            return res.status(400).json({ message: 'Password is required' });
+        }
+
+        // Validate field formats
+        if (username.trim().length < 3) {
+            return res.status(400).json({ message: 'Username must be at least 3 characters long' });
+        }
+        if (username.trim().length > 50) {
+            return res.status(400).json({ message: 'Username must be at most 50 characters long' });
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword });
+        const newUser = new User({
+            username: username.trim(),
+            email: email.trim().toLowerCase(),
+            password: hashedPassword
+        });
         await newUser.save();
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        // Handle duplicate email (Mongoose code 11000)
+        if (error.code === 11000) {
+            return res.status(409).json({ message: 'Email already exists' });
+        }
+        res.status(400).json({ message: error.message });
     }
 };
 

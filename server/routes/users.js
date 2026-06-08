@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
-import { userCreationLimiter, profileUpdateLimiter } from '../middleware/rateLimiter.js';
+import { userCreationLimiter, profileUpdateLimiter, deleteOperationLimiter } from '../middleware/rateLimiter.js';
 import { 
     getAllUsers, 
     getUserById, 
@@ -24,6 +24,6 @@ router.put('/change-password', profileUpdateLimiter, changePassword);
 router.post('/', userCreationLimiter, createUser);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.delete('/:id', deleteOperationLimiter, deleteUser);
 
 export default router;
