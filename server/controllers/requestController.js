@@ -161,26 +161,38 @@ export const getConversationsForUser = async (req, res) => {
     const conversationsMap = new Map();
 
     requests.forEach(request => {
-      const isOwner = request.owner._id.toString() === userId;
+      // Skip requests where owner or requester data is missing (user deleted)
+      if (!request.owner || !request.requester || !request.book) {
+        return;
+      }
+
+      const ownerId = request.owner._id ? request.owner._id.toString() : null;
+      const requesterId = request.requester._id ? request.requester._id.toString() : null;
+
+      if (!ownerId || !requesterId) {
+        return;
+      }
+
+      const isOwner = ownerId === userId;
       const otherParticipant = isOwner ? request.requester : request.owner;
-      const participantId = otherParticipant._id.toString();
+      const participantId = isOwner ? requesterId : ownerId;
 
       if (!conversationsMap.has(participantId)) {
         conversationsMap.set(participantId, {
           id: participantId,
           participant: otherParticipant,
-          lastMessage: request.message || `Book Request: "${request.book.title}"`,
+          lastMessage: request.message || (request.book.title ? `Book Request: "${request.book.title}"` : 'Book Request'),
           lastMessageTime: request.createdAt,
           status: request.status,
           book: request.book,
           requestId: request._id,
           isOwner: isOwner,
-          unreadCount: 0 // We'll implement this later
+          unreadCount: 0
         });
       } else {
         const existing = conversationsMap.get(participantId);
         if (request.createdAt > existing.lastMessageTime) {
-          existing.lastMessage = request.message || `Book Request: "${request.book.title}"`;
+          existing.lastMessage = request.message || (request.book.title ? `Book Request: "${request.book.title}"` : 'Book Request');
           existing.lastMessageTime = request.createdAt;
           existing.status = request.status;
           existing.book = request.book;
