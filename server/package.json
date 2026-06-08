@@ -19,9 +19,6 @@
     "devDependencies": {
         "nodemon": "^3.1.10"
     },
-    "overrides": {
-        "jws": "^4.0.1"
-    },
     "author": "Asim736",
     "license": "MIT",
     "keywords": [
