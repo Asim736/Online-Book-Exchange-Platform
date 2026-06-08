@@ -3,6 +3,7 @@ import { ENV_PATH } from './config/env.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import { apiLimiter, authLimiter, dataOperationLimiter } from './middleware/rateLimiter.js';
 
 console.log(`[BOOT] Using .env path: ${ENV_PATH}`);
 
@@ -109,11 +110,17 @@ app.get('/', (req, res) => {
 });
 
 // Routes (must be defined BEFORE the catch-all)
+// Apply rate limiters (placed after lightweight endpoints, before route handlers)
+app.use('/api', apiLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/requests', dataOperationLimiter);
+app.use('/api/exchanges', dataOperationLimiter);
+
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/exchanges', exchangeRoutes);
-app.use("/api/requests", requestRoutes);
+app.use('/api/requests', requestRoutes);
 
 // Test user creation and login
 app.post('/api/test-user', async (req, res) => {
