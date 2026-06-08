@@ -27,13 +27,58 @@ function runGetUserById(users, id) {
 }
 
 function runCreateUser(body) {
-  // Simulates the controller's validation + save
-  if (!body || !body.username || !body.email || !body.password) {
-    return { status: 400, body: { message: 'Validation failed: username, email, and password are required' } };
+  // Simulates the hardened controller's validation + save
+  if (!body) {
+    return { status: 400, body: { message: 'Username is required' } };
   }
+
+  const { username, email, password, ...rest } = body;
+
+  // Check for unexpected/MongoDB fields
+  const unexpectedKeys = Object.keys(rest).filter(
+    k => k.startsWith('$') || !['username', 'email', 'password'].includes(k)
+  );
+  if (unexpectedKeys.length > 0) {
+    return { status: 400, body: { message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}` } };
+  }
+
+  // Validate required fields
+  if (!username || !username.trim()) {
+    return { status: 400, body: { message: 'Username is required' } };
+  }
+  if (!email || !email.trim()) {
+    return { status: 400, body: { message: 'Email is required' } };
+  }
+  if (!password || typeof password !== 'string') {
+    return { status: 400, body: { message: 'Password is required' } };
+  }
+
+  // Validate field formats
+  if (username.trim().length < 3) {
+    return { status: 400, body: { message: 'Username must be at least 3 characters long' } };
+  }
+  if (username.trim().length > 50) {
+    return { status: 400, body: { message: 'Username must be at most 50 characters long' } };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.trim())) {
+    return { status: 400, body: { message: 'Invalid email format' } };
+  }
+  if (password.length < 6) {
+    return { status: 400, body: { message: 'Password must be at least 6 characters long' } };
+  }
+
   // Simulate duplicate email check (Mongoose error code 11000)
-  const { password, ...safeUser } = body;
-  return { status: 201, body: { _id: 'newUserId', ...safeUser } };
+  if (existingEmails && existingEmails.has(email.trim().toLowerCase())) {
+    return { status: 409, body: { message: 'Email already exists' } };
+  }
+
+  // Simulate password hashing by stripping it from response
+  return { status: 201, body: { _id: 'newUserId', username: username.trim(), email: email.trim().toLowerCase() } };
+}
+let existingEmails = null;
+function setExistingEmails(emailSet) {
+  existingEmails = emailSet;
 }
 
 function runDeleteUser(user) {
@@ -140,9 +185,14 @@ describe('getUserById', () => {
 });
 
 describe('createUser', () => {
+  const validBody = { username: 'newuser', email: 'new@test.com', password: 'secure123' };
+
+  beforeEach(() => {
+    setExistingEmails(null);
+  });
+
   test('creates user with valid fields and returns 201', () => {
-    const body = { username: 'newuser', email: 'new@test.com', password: 'secure123' };
-    const result = runCreateUser(body);
+    const result = runCreateUser(validBody);
     expect(result.status).toBe(201);
     expect(result.body).toHaveProperty('_id');
     expect(result.body.username).toBe('newuser');
@@ -150,23 +200,152 @@ describe('createUser', () => {
     expect(result.body).not.toHaveProperty('password');
   });
 
+  test('normalizes email to lowercase', () => {
+    const result = runCreateUser({ ...validBody, email: 'New@Test.COM' });
+    expect(result.status).toBe(201);
+    expect(result.body.email).toBe('new@test.com');
+  });
+
+  test('trims whitespace from username and email', () => {
+    const result = runCreateUser({ ...validBody, username: '  spaceduser  ', email: ' spaced@test.com  ' });
+    expect(result.status).toBe(201);
+    expect(result.body.username).toBe('spaceduser');
+    expect(result.body.email).toBe('spaced@test.com');
+  });
+
   test('rejects missing username', () => {
-    const body = { email: 'new@test.com', password: 'secure123' };
+    const { username, ...body } = validBody;
     const result = runCreateUser(body);
     expect(result.status).toBe(400);
-    expect(result.body.message).toContain('required');
+    expect(result.body.message).toContain('Username is required');
+  });
+
+  test('rejects empty username string', () => {
+    const result = runCreateUser({ ...validBody, username: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Username is required');
+  });
+
+  test('rejects whitespace-only username', () => {
+    const result = runCreateUser({ ...validBody, username: '   ' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Username is required');
+  });
+
+  test('rejects username shorter than 3 characters', () => {
+    const result = runCreateUser({ ...validBody, username: 'ab' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 3 characters');
+  });
+
+  test('rejects username longer than 50 characters', () => {
+    const result = runCreateUser({ ...validBody, username: 'a'.repeat(51) });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at most 50 characters');
+  });
+
+  test('accepts username of exactly 3 characters', () => {
+    const result = runCreateUser({ ...validBody, username: 'abc' });
+    expect(result.status).toBe(201);
   });
 
   test('rejects missing email', () => {
-    const body = { username: 'newuser', password: 'secure123' };
+    const { email, ...body } = validBody;
     const result = runCreateUser(body);
     expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Email is required');
+  });
+
+  test('rejects empty email string', () => {
+    const result = runCreateUser({ ...validBody, email: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Email is required');
+  });
+
+  test('rejects invalid email format', () => {
+    const result = runCreateUser({ ...validBody, email: 'notanemail' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
+  });
+
+  test('rejects email without domain', () => {
+    const result = runCreateUser({ ...validBody, email: 'user@' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
   });
 
   test('rejects missing password', () => {
-    const body = { username: 'newuser', email: 'new@test.com' };
+    const { password, ...body } = validBody;
     const result = runCreateUser(body);
     expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Password is required');
+  });
+
+  test('rejects password shorter than 6 characters', () => {
+    const result = runCreateUser({ ...validBody, password: 'abc' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 6 characters');
+  });
+
+  test('accepts password of exactly 6 characters', () => {
+    const result = runCreateUser({ ...validBody, password: '123456' });
+    expect(result.status).toBe(201);
+  });
+
+  test('rejects duplicate email', () => {
+    setExistingEmails(new Set(['existing@test.com']));
+    const result = runCreateUser({ ...validBody, email: 'existing@test.com' });
+    expect(result.status).toBe(409);
+    expect(result.body.message).toBe('Email already exists');
+  });
+
+  test('duplicate email check is case-insensitive', () => {
+    setExistingEmails(new Set(['existing@test.com']));
+    const result = runCreateUser({ ...validBody, email: 'EXISTING@TEST.COM' });
+    expect(result.status).toBe(409);
+  });
+
+  test('strips password from response', () => {
+    const result = runCreateUser(validBody);
+    expect(result.status).toBe(201);
+    expect(result.body).not.toHaveProperty('password');
+  });
+
+  test('rejects NoSQL injection via $gt operator in body', () => {
+    const result = runCreateUser({ ...validBody, $gt: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $ne operator in body', () => {
+    const result = runCreateUser({ ...validBody, $ne: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $where operator in body', () => {
+    const result = runCreateUser({ ...validBody, $where: '1=1' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects unexpected fields like role', () => {
+    const result = runCreateUser({ ...validBody, role: 'admin' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+    expect(result.body.message).toContain('role');
+  });
+
+  test('rejects non-string password (object)', () => {
+    const result = runCreateUser({ ...validBody, password: { $ne: '' } });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Password is required');
+  });
+
+  test('rejects non-string password (array)', () => {
+    const result = runCreateUser({ ...validBody, password: ['hack'] });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Password is required');
   });
 
   test('rejects empty body', () => {

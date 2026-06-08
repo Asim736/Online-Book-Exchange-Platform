@@ -26,10 +26,64 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-        const newUser = new User(req.body);
+        // Destructure only allowed fields to prevent NoSQL injection
+        const { username, email, password, ...rest } = req.body;
+
+        // Check for unexpected/MongoDB fields in the request
+        const unexpectedKeys = Object.keys(rest).filter(
+            k => k.startsWith('$') || !['username', 'email', 'password'].includes(k)
+        );
+        if (unexpectedKeys.length > 0) {
+            return res.status(400).json({
+                message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}`
+            });
+        }
+
+        // Validate required fields
+        if (!username || !username.trim()) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+        if (!email || !email.trim()) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        if (!password || typeof password !== 'string') {
+            return res.status(400).json({ message: 'Password is required' });
+        }
+
+        // Validate field formats
+        if (username.trim().length < 3) {
+            return res.status(400).json({ message: 'Username must be at least 3 characters long' });
+        }
+        if (username.trim().length > 50) {
+            return res.status(400).json({ message: 'Username must be at most 50 characters long' });
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        }
+
+        // Hash password
+        const bcrypt = await import('bcryptjs');
+        const hashedPassword = await bcrypt.default.hash(password, 10);
+
+        const newUser = new User({
+            username: username.trim(),
+            email: email.trim().toLowerCase(),
+            password: hashedPassword
+        });
         const savedUser = await newUser.save();
-        res.status(201).json(savedUser);
+
+        // Return user without password
+        const { password: removedPassword, ...safeUser } = savedUser.toObject();
+        res.status(201).json(safeUser);
     } catch (error) {
+        // Handle duplicate email (Mongoose code 11000)
+        if (error.code === 11000) {
+            return res.status(409).json({ message: 'Email already exists' });
+        }
         res.status(400).json({ message: error.message });
     }
 };
