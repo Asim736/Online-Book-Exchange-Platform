@@ -149,16 +149,42 @@ function runUpdateProfile(userId, body) {
   return { status: 200, body: { message: 'Profile updated successfully', user: { _id: userId, ...updateData } } };
 }
 
-function runChangePassword(user, currentPassword, newPassword) {
-  if (!currentPassword || !newPassword) {
-    return { status: 400, body: { message: 'Current password and new password are required' } };
+function runChangePassword(userId, body, mockDbUser) {
+  // Simulates the hardened changePassword controller
+  if (!userId) return { status: 401, body: { message: 'User not authenticated' } };
+  if (!body) return { status: 400, body: { message: 'Current password is required' } };
+
+  const { currentPassword, newPassword, ...rest } = body;
+
+  // Check for unexpected/MongoDB fields
+  const unexpectedKeys = Object.keys(rest).filter(
+    k => k.startsWith('$') || !['currentPassword', 'newPassword'].includes(k)
+  );
+  if (unexpectedKeys.length > 0) {
+    return { status: 400, body: { message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}` } };
   }
+
+  // Validate required fields with type checks
+  if (!currentPassword || typeof currentPassword !== 'string') {
+    return { status: 400, body: { message: 'Current password is required' } };
+  }
+  if (!newPassword || typeof newPassword !== 'string') {
+    return { status: 400, body: { message: 'New password is required' } };
+  }
+
+  // Validate new password length
   if (newPassword.length < 6) {
     return { status: 400, body: { message: 'New password must be at least 6 characters long' } };
   }
-  if (!user) {
-    return { status: 404, body: { message: 'User not found' } };
+  if (newPassword.length > 128) {
+    return { status: 400, body: { message: 'New password must be at most 128 characters long' } };
   }
+
+  // Simulate DB user lookup (optional)
+  if (mockDbUser !== undefined) {
+    if (!mockDbUser) return { status: 404, body: { message: 'User not found' } };
+  }
+
   return { status: 200, body: { message: 'Password changed successfully' } };
 }
 
@@ -700,40 +726,125 @@ describe('updateProfile', () => {
 });
 
 describe('changePassword', () => {
-  const mockUser = { _id: 'user1', username: 'alice', email: 'alice@test.com' };
+  const userId = 'user123';
+  const validBody = { currentPassword: 'oldPass123', newPassword: 'newPass456' };
 
   test('returns 200 on successful password change', () => {
-    const result = runChangePassword(mockUser, 'oldPass123', 'newPass456');
+    const result = runChangePassword(userId, validBody);
     expect(result.status).toBe(200);
     expect(result.body.message).toBe('Password changed successfully');
   });
 
+  test('returns 401 when user is not authenticated', () => {
+    const result = runChangePassword(undefined, validBody);
+    expect(result.status).toBe(401);
+    expect(result.body.message).toContain('not authenticated');
+  });
+
   test('rejects missing currentPassword', () => {
-    const result = runChangePassword(mockUser, undefined, 'newpass123');
+    const { currentPassword, ...body } = validBody;
+    const result = runChangePassword(userId, body);
     expect(result.status).toBe(400);
-    expect(result.body.message).toContain('required');
+    expect(result.body.message).toBe('Current password is required');
   });
 
   test('rejects missing newPassword', () => {
-    const result = runChangePassword(mockUser, 'oldpass', undefined);
+    const { newPassword, ...body } = validBody;
+    const result = runChangePassword(userId, body);
     expect(result.status).toBe(400);
-    expect(result.body.message).toContain('required');
+    expect(result.body.message).toBe('New password is required');
+  });
+
+  test('rejects non-string currentPassword (object)', () => {
+    const result = runChangePassword(userId, { ...validBody, currentPassword: { $ne: '' } });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Current password is required');
+  });
+
+  test('rejects non-string currentPassword (array)', () => {
+    const result = runChangePassword(userId, { ...validBody, currentPassword: ['hack'] });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Current password is required');
+  });
+
+  test('rejects non-string newPassword (object)', () => {
+    const result = runChangePassword(userId, { ...validBody, newPassword: { $gt: '' } });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('New password is required');
+  });
+
+  test('rejects non-string newPassword (array)', () => {
+    const result = runChangePassword(userId, { ...validBody, newPassword: ['hack'] });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('New password is required');
   });
 
   test('rejects newPassword shorter than 6 characters', () => {
-    const result = runChangePassword(mockUser, 'oldpass', 'abc');
+    const result = runChangePassword(userId, { ...validBody, newPassword: 'abc' });
     expect(result.status).toBe(400);
     expect(result.body.message).toContain('at least 6 characters');
   });
 
   test('accepts newPassword of exactly 6 characters', () => {
-    const result = runChangePassword(mockUser, 'oldpass', '123456');
+    const result = runChangePassword(userId, { ...validBody, newPassword: '123456' });
     expect(result.status).toBe(200);
   });
 
-  test('returns 404 when user not found', () => {
-    const result = runChangePassword(null, 'oldpass', 'newpass123');
+  test('rejects newPassword longer than 128 characters', () => {
+    const result = runChangePassword(userId, { ...validBody, newPassword: 'a'.repeat(129) });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at most 128 characters');
+  });
+
+  test('accepts newPassword of exactly 128 characters', () => {
+    const result = runChangePassword(userId, { ...validBody, newPassword: 'a'.repeat(128) });
+    expect(result.status).toBe(200);
+  });
+
+  test('rejects NoSQL injection via $gt operator', () => {
+    const result = runChangePassword(userId, { ...validBody, $gt: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $ne operator', () => {
+    const result = runChangePassword(userId, { ...validBody, $ne: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $where operator', () => {
+    const result = runChangePassword(userId, { ...validBody, $where: '1=1' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects unexpected fields in body', () => {
+    const result = runChangePassword(userId, { ...validBody, role: 'admin' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects empty body', () => {
+    const result = runChangePassword(userId, {});
+    expect(result.status).toBe(400);
+  });
+
+  test('rejects null body', () => {
+    const result = runChangePassword(userId, null);
+    expect(result.status).toBe(400);
+  });
+
+  test('returns 404 when user not found in database', () => {
+    const result = runChangePassword(userId, validBody, null);
     expect(result.status).toBe(404);
     expect(result.body.message).toBe('User not found');
+  });
+
+  test('succeeds when user exists in database', () => {
+    const mockUser = { _id: userId, username: 'alice', email: 'alice@test.com' };
+    const result = runChangePassword(userId, validBody, mockUser);
+    expect(result.status).toBe(200);
+    expect(result.body.message).toBe('Password changed successfully');
   });
 });

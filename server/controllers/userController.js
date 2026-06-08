@@ -249,15 +249,38 @@ export const updateProfile = async (req, res) => {
 // Change user password
 export const changePassword = async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
-        const userId = req.user._id;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ message: 'Current password and new password are required' });
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
+        // Destructure only allowed fields to prevent NoSQL injection
+        const { currentPassword, newPassword, ...rest } = req.body;
+
+        // Check for unexpected/MongoDB fields in the request
+        const unexpectedKeys = Object.keys(rest).filter(
+            k => k.startsWith('$') || !['currentPassword', 'newPassword'].includes(k)
+        );
+        if (unexpectedKeys.length > 0) {
+            return res.status(400).json({
+                message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}`
+            });
+        }
+
+        // Validate required fields with type checks
+        if (!currentPassword || typeof currentPassword !== 'string') {
+            return res.status(400).json({ message: 'Current password is required' });
+        }
+        if (!newPassword || typeof newPassword !== 'string') {
+            return res.status(400).json({ message: 'New password is required' });
+        }
+
+        // Validate new password length
         if (newPassword.length < 6) {
             return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+        }
+        if (newPassword.length > 128) {
+            return res.status(400).json({ message: 'New password must be at most 128 characters long' });
         }
 
         const user = await User.findById(userId);
@@ -266,14 +289,14 @@ export const changePassword = async (req, res) => {
         }
 
         // Verify current password
-    const bcrypt = await import('bcryptjs');
-    const isCurrentPasswordValid = await bcrypt.default.compare(currentPassword, user.password);
+        const bcrypt = await import('bcryptjs');
+        const isCurrentPasswordValid = await bcrypt.default.compare(currentPassword, user.password);
         if (!isCurrentPasswordValid) {
             return res.status(400).json({ message: 'Current password is incorrect' });
         }
 
         // Hash new password
-    const hashedNewPassword = await bcrypt.default.hash(newPassword, 10);
+        const hashedNewPassword = await bcrypt.default.hash(newPassword, 10);
 
         // Update password
         await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
