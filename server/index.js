@@ -35,7 +35,7 @@ const app = express();
 // Robust CORS handling: allow specific origins from env in production, with exact match
 const allowedOrigins = (process.env.NODE_ENV === 'production'
     ? (process.env.CORS_ORIGINS || '')
-    : 'http://localhost:5173,http://localhost:5174,http://localhost:5175')
+    : 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:4173')
     .split(',')
     .map(o => o.trim())
     .filter(Boolean);
