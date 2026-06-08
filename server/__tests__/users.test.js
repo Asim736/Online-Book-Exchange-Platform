@@ -96,14 +96,57 @@ function runSanitizeUpdate(reqBody, allowedFields) {
   return sanitized;
 }
 
-function runSanitizeProfile(updateData, allowedFields) {
-  const sanitized = {};
-  for (const key of Object.keys(updateData)) {
-    if (allowedFields.includes(key) && typeof key === 'string' && !key.startsWith('$')) {
-      sanitized[key] = updateData[key];
-    }
+function runUpdateProfile(userId, body) {
+  // Simulates the hardened updateProfile controller
+  if (!userId) return { status: 401, body: { message: 'User not authenticated' } };
+  if (!body) return { status: 400, body: { message: 'No valid fields to update' } };
+
+  const allowedFields = ['username', 'email', 'bio', 'contact', 'avatar'];
+  const { username, email, bio, contact, avatar, ...rest } = body;
+
+  // Check for unexpected/MongoDB fields
+  const unexpectedKeys = Object.keys(rest).filter(
+    k => k.startsWith('$') || !allowedFields.includes(k)
+  );
+  if (unexpectedKeys.length > 0) {
+    return { status: 400, body: { message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}` } };
   }
-  return sanitized;
+
+  const updateData = {};
+
+  if (username !== undefined) {
+    if (typeof username !== 'string' || !username.trim()) {
+      return { status: 400, body: { message: 'Username must be a non-empty string' } };
+    }
+    if (username.trim().length < 3) {
+      return { status: 400, body: { message: 'Username must be at least 3 characters long' } };
+    }
+    if (username.trim().length > 50) {
+      return { status: 400, body: { message: 'Username must be at most 50 characters long' } };
+    }
+    updateData.username = username.trim();
+  }
+
+  if (email !== undefined) {
+    if (typeof email !== 'string' || !email.trim()) {
+      return { status: 400, body: { message: 'Email must be a non-empty string' } };
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return { status: 400, body: { message: 'Invalid email format' } };
+    }
+    updateData.email = email.trim().toLowerCase();
+  }
+
+  if (bio !== undefined) updateData.bio = bio;
+  if (contact !== undefined) updateData.contact = contact;
+  if (avatar !== undefined) updateData.avatar = avatar;
+
+  if (Object.keys(updateData).length === 0) {
+    return { status: 400, body: { message: 'No valid fields to update' } };
+  }
+
+  return { status: 200, body: { message: 'Profile updated successfully', user: { _id: userId, ...updateData } } };
 }
 
 function runChangePassword(user, currentPassword, newPassword) {
@@ -527,60 +570,132 @@ describe('getUserMessages', () => {
 });
 
 describe('updateProfile', () => {
+  const userId = 'user123';
+  const validBody = { username: 'validuser', email: 'valid@test.com', bio: 'Hello', contact: '123-456', avatar: 'https://example.com/avatar.png' };
+
   test('returns 401 when user is not authenticated', () => {
-    function runUpdateProfile(userId) {
-      if (!userId) return { status: 401, body: { message: 'User not authenticated' } };
-      return { status: 200, body: { message: 'Profile updated successfully' } };
-    }
-    const result = runUpdateProfile(undefined);
+    const result = runUpdateProfile(undefined, validBody);
     expect(result.status).toBe(401);
     expect(result.body.message).toContain('not authenticated');
   });
 
-  test('whitelists allowed profile fields and strips MongoDB operators', () => {
-    const allowedFields = ['username', 'email', 'bio', 'contact', 'avatar'];
-    const reqBody = {
-      username: 'updateduser',
-      bio: 'New bio',
-      role: 'admin',       // Not allowed
-      $set: { password: 'hacked' }, // Not allowed
-    };
-
-    // Simulate the controller's first pass
-    const updateData = {};
-    if (reqBody.username?.trim()) updateData.username = reqBody.username.trim();
-    if (reqBody.bio !== undefined) updateData.bio = reqBody.bio;
-
-    const sanitizedUpdate = runSanitizeProfile(updateData, allowedFields);
-
-    expect(sanitizedUpdate).toHaveProperty('username');
-    expect(sanitizedUpdate).toHaveProperty('bio');
-    expect(sanitizedUpdate).not.toHaveProperty('role');
-    expect(sanitizedUpdate).not.toHaveProperty('$set');
+  test('updates all allowed fields successfully', () => {
+    const result = runUpdateProfile(userId, validBody);
+    expect(result.status).toBe(200);
+    expect(result.body.user.username).toBe('validuser');
+    expect(result.body.user.email).toBe('valid@test.com');
+    expect(result.body.user.bio).toBe('Hello');
+    expect(result.body.user.contact).toBe('123-456');
+    expect(result.body.user.avatar).toBe('https://example.com/avatar.png');
   });
 
-  test('strips MongoDB operators from update data', () => {
-    const allowedFields = ['username', 'email', 'bio', 'contact', 'avatar'];
-    const maliciousData = {
-      username: 'abc',
-      $gt: '',  // MongoDB operator injection attempt
-      $where: '1=1',
-    };
-
-    const sanitizedUpdate = runSanitizeProfile(maliciousData, allowedFields);
-    expect(sanitizedUpdate).not.toHaveProperty('$gt');
-    expect(sanitizedUpdate).not.toHaveProperty('$where');
-    expect(sanitizedUpdate).toHaveProperty('username');
+  test('normalizes email to lowercase', () => {
+    const result = runUpdateProfile(userId, { ...validBody, email: 'UPPERCASE@TEST.COM' });
+    expect(result.status).toBe(200);
+    expect(result.body.user.email).toBe('uppercase@test.com');
   });
 
-  test('returns 200 with user on success', () => {
-    const response = {
-      message: 'Profile updated successfully',
-      user: { _id: 'user123', username: 'updated', email: 'test@test.com' },
-    };
-    expect(response.message).toContain('success');
-    expect(response).toHaveProperty('user');
-    expect(response.user._id).toBe('user123');
+  test('trims whitespace from username', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: '  trimmeduser  ' });
+    expect(result.status).toBe(200);
+    expect(result.body.user.username).toBe('trimmeduser');
+  });
+
+  test('rejects empty username string', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Username must be a non-empty string');
+  });
+
+  test('rejects whitespace-only username', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: '   ' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Username must be a non-empty string');
+  });
+
+  test('rejects username shorter than 3 characters', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: 'ab' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at least 3 characters');
+  });
+
+  test('rejects username longer than 50 characters', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: 'a'.repeat(51) });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('at most 50 characters');
+  });
+
+  test('accepts username of exactly 3 characters', () => {
+    const result = runUpdateProfile(userId, { ...validBody, username: 'abc' });
+    expect(result.status).toBe(200);
+  });
+
+  test('rejects empty email string', () => {
+    const result = runUpdateProfile(userId, { ...validBody, email: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Email must be a non-empty string');
+  });
+
+  test('rejects invalid email format', () => {
+    const result = runUpdateProfile(userId, { ...validBody, email: 'notanemail' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
+  });
+
+  test('rejects email without domain', () => {
+    const result = runUpdateProfile(userId, { ...validBody, email: 'user@' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid email format');
+  });
+
+  test('rejects NoSQL injection via $gt operator', () => {
+    const result = runUpdateProfile(userId, { ...validBody, $gt: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $ne operator', () => {
+    const result = runUpdateProfile(userId, { ...validBody, $ne: '' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects NoSQL injection via $where operator', () => {
+    const result = runUpdateProfile(userId, { ...validBody, $where: '1=1' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+  });
+
+  test('rejects unexpected fields like role', () => {
+    const result = runUpdateProfile(userId, { ...validBody, role: 'admin' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+    expect(result.body.message).toContain('role');
+  });
+
+  test('rejects unexpected MongoDB operator as top-level key', () => {
+    const result = runUpdateProfile(userId, { ...validBody, $set: { password: 'hacked' } });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toContain('Unexpected fields detected');
+    expect(result.body.message).toContain('$set');
+  });
+
+  test('rejects empty body', () => {
+    const result = runUpdateProfile(userId, {});
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('No valid fields to update');
+  });
+
+  test('rejects null body', () => {
+    const result = runUpdateProfile(userId, null);
+    expect(result.status).toBe(400);
+  });
+
+  test('partial update with only bio works', () => {
+    const result = runUpdateProfile(userId, { bio: 'Just updating bio' });
+    expect(result.status).toBe(200);
+    expect(result.body.user.bio).toBe('Just updating bio');
+    expect(result.body.user).not.toHaveProperty('username');
   });
 });
 

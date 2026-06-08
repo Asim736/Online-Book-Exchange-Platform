@@ -49,4 +49,28 @@ export const userCreationLimiter = rateLimit({
   }
 });
 
+// Strict limiter for profile/password changes: 10 requests per 15 minutes
+export const profileUpdateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many profile update attempts',
+    message: 'You have exceeded the limit for profile changes. Please try again later.'
+  }
+});
+
+// Moderate limiter for book create/update: 15 requests per 15 minutes
+export const bookOperationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many book operations',
+    message: 'You have exceeded the limit for book operations. Please try again later.'
+  }
+});
+
 

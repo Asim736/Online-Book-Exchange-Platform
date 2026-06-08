@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import { authenticateToken } from '../middleware/auth.js';
+import { bookOperationLimiter } from '../middleware/rateLimiter.js';
 import { 
     getAllBooks, 
     getBookById, 
@@ -26,9 +27,9 @@ router.get('/:id', getBookById);
 // Apply auth middleware for remaining protected routes
 router.use(authenticateToken);
 // Create with multipart upload: field name 'images'
-router.post('/', upload.array('images', 3), createBook);
+router.post('/', bookOperationLimiter, upload.array('images', 3), createBook);
 // Update can also accept additional images
-router.put('/:id', upload.array('images', 3), updateBook);
+router.put('/:id', bookOperationLimiter, upload.array('images', 3), updateBook);
 router.delete('/:id', deleteBook);
 
 export default router;

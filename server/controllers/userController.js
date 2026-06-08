@@ -169,50 +169,69 @@ export const getUserMessages = async (req, res) => {
 // Update user profile (for authenticated users)
 export const updateProfile = async (req, res) => {
     try {
-        console.log('Update profile request received');
-        console.log('User ID:', req.user?._id);
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
-        
-        const userId = req.user._id;
-        const { username, email, bio, avatar, contact } = req.body;
-
-        // Validation
+        const userId = req.user?._id;
         if (!userId) {
             return res.status(401).json({ message: 'User not authenticated' });
         }
 
-        // Strict whitelist of allowed fields to prevent NoSQL injection
+        // Destructure only allowed fields to prevent NoSQL injection
+        const { username, email, bio, avatar, contact, ...rest } = req.body;
+
+        // Check for unexpected/MongoDB fields in the request
         const allowedFields = ['username', 'email', 'bio', 'contact', 'avatar'];
+        const unexpectedKeys = Object.keys(rest).filter(
+            k => k.startsWith('$') || !allowedFields.includes(k)
+        );
+        if (unexpectedKeys.length > 0) {
+            return res.status(400).json({
+                message: `Unexpected fields detected: ${unexpectedKeys.join(', ')}`
+            });
+        }
+
+        // Build update data with whitelisted fields only
         const updateData = {};
-        
-        // Only allow explicitly whitelisted fields
-        if (username && username.trim()) updateData.username = username.trim();
-        if (email && email.trim()) updateData.email = email.trim();
+
+        if (username !== undefined) {
+            if (typeof username !== 'string' || !username.trim()) {
+                return res.status(400).json({ message: 'Username must be a non-empty string' });
+            }
+            if (username.trim().length < 3) {
+                return res.status(400).json({ message: 'Username must be at least 3 characters long' });
+            }
+            if (username.trim().length > 50) {
+                return res.status(400).json({ message: 'Username must be at most 50 characters long' });
+            }
+            updateData.username = username.trim();
+        }
+
+        if (email !== undefined) {
+            if (typeof email !== 'string' || !email.trim()) {
+                return res.status(400).json({ message: 'Email must be a non-empty string' });
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                return res.status(400).json({ message: 'Invalid email format' });
+            }
+            updateData.email = email.trim().toLowerCase();
+        }
+
         if (bio !== undefined) updateData.bio = bio;
         if (contact !== undefined) updateData.contact = contact;
         if (avatar !== undefined) updateData.avatar = avatar;
 
-        // Ensure no MongoDB operators or other fields can be injected
-        const sanitizedUpdate = {};
-        for (const key of Object.keys(updateData)) {
-            if (allowedFields.includes(key) && typeof key === 'string' && !key.startsWith('$')) {
-                sanitizedUpdate[key] = updateData[key];
-            }
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields to update' });
         }
-
-        console.log('Update data:', JSON.stringify(sanitizedUpdate, null, 2));
 
         const user = await User.findByIdAndUpdate(
             userId,
-            { $set: sanitizedUpdate },
+            { $set: updateData },
             { new: true, runValidators: true }
         ).select('-password');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        console.log('Profile updated successfully for user:', user.username);
 
         res.status(200).json({
             message: 'Profile updated successfully',
