@@ -296,6 +296,8 @@ const BookList = () => {
           {/* Main Search Input */}
           <div className="search-input-wrapper">
             <input
+              id="book-search"
+              name="book-search"
               type="text"
               value={searchQuery}
               onChange={handleSearchInputChange}

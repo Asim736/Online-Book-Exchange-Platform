@@ -11,6 +11,8 @@ const SearchBar = ({ onSearch }) => {
     return (
         <form onSubmit={handleSearch}>
             <input
+                id="nav-search"
+                name="nav-search"
                 type="text"
                 placeholder="Search for books..."
                 value={query}
