@@ -752,6 +752,8 @@ const Inbox = () => {
               <div className="search-section">
                 <h4 className="mb-4 fw-bold" style={{ color: '#1f2937', fontSize: '24px', fontWeight: '600' }}>Inbox</h4>
                 <input 
+                  id="inbox-search"
+                  name="inbox-search"
                   type="text" 
                   className="search-bar form-control mb-3" 
                   placeholder="Search conversations..." 
@@ -967,6 +969,8 @@ const Inbox = () => {
               <div className="message-input-container p-3">
                 <div className="input-group">
                   <input
+                    id="chat-message-input"
+                    name="chat-message"
                     type="text"
                     className="form-control message-input py-3"
                     placeholder="Type your message..."
@@ -1171,6 +1175,8 @@ const Inbox = () => {
             <div className="message-input-container border-top" style={{ padding: '12px 16px' }}>
               <div className="input-group">
                 <input
+                  id="mobile-chat-message-input"
+                  name="mobile-chat-message"
                   type="text"
                   className="form-control message-input"
                   placeholder="Type your message..."
