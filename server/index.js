@@ -3,6 +3,7 @@ import { ENV_PATH } from './config/env.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
 import { apiLimiter, authLimiter, dataOperationLimiter } from './middleware/rateLimiter.js';
 
 console.log(`[BOOT] Using .env path: ${ENV_PATH}`);
@@ -59,6 +60,36 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors(corsOptions));
+
+// Security headers (helmet) - must be after CORS middleware
+const isDev = process.env.NODE_ENV !== 'production';
+const cspScriptSrc = ["'self'", "'unsafe-inline'"];
+const cspConnectSrc = ["'self'", 'https://online-book-exchange-platform-r03e.onrender.com'];
+
+// React dev mode needs eval for HMR; Vite HMR uses websocket on localhost
+if (isDev) {
+  cspScriptSrc.push("'unsafe-eval'");
+  cspConnectSrc.push('ws://localhost:5173');
+}
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow avatars from external CDNs
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],                                                    // Prevent <base> tag injection
+      scriptSrc: cspScriptSrc,
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'], // Bootstrap CSS
+      imgSrc: ["'self'", 'data:', 'https://ui-avatars.com', 'https://i.pravatar.cc'], // User avatars
+      connectSrc: cspConnectSrc,
+      fontSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"]
+    }
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
 app.use(express.json({ limit: '50mb' })); // Increase payload limit for images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
