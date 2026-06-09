@@ -1,10 +1,17 @@
 import express from 'express';
-import { login, register, validateToken } from '../controllers/authController.js';
+import { login, register, verifyEmail, forgotPassword, resetPassword, validateToken } from '../controllers/authController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Add the validate endpoint
+// Email verification
+router.get('/verify-email', verifyEmail);
+
+// Forgot / reset password
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
+
+// Token validation
 router.get('/validate', authenticateToken, validateToken);
 
 router.post('/login', login);
@@ -20,3 +27,6 @@ router.get('/login', (req, res) => {
 });
 
 export default router;
+
+// Verify route is registered
+console.log('[ROUTES] Auth routes registered: GET /verify-email, POST /forgot-password, POST /reset-password');

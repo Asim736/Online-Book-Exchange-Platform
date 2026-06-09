@@ -16,6 +16,8 @@ const BookList = React.lazy(() => import('./components/Books/BookList'));
 const Login = React.lazy(() => import('./components/Auth/Login'));
 const SignUp = React.lazy(() => import('./components/Auth/SignUp'));
 const ForgotPassword = React.lazy(() => import('./components/Auth/ForgotPassword'));
+const VerifyEmail = React.lazy(() => import('./components/Auth/VerifyEmail'));
+const ResetPassword = React.lazy(() => import('./components/Auth/ResetPassword'));
 const BookDetail = React.lazy(() => import('./components/Books/BookDetail'));
 const BookUpload = React.lazy(() => import('./components/Books/BookUpload'));
 const BookRequests = React.lazy(() => import('./components/Books/BookRequests'));
@@ -42,6 +44,8 @@ function App() {
             <Route path="/login" element={<div className="container"><Login /></div>} />
             <Route path="/signup" element={<div className="container"><SignUp /></div>} />
             <Route path="/forgot-password" element={<div className="container"><ForgotPassword /></div>} />
+            <Route path="/verify-email" element={<div className="container"><VerifyEmail /></div>} />
+            <Route path="/reset-password" element={<div className="container"><ResetPassword /></div>} />
 
             {/* Protected Routes */}
             <Route 

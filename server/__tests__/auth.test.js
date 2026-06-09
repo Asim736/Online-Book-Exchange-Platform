@@ -70,15 +70,19 @@ function runForgotPassword(body) {
   if (!emailRegex.test(body.email.trim())) {
     return { status: 400, body: { message: 'Invalid email format' } };
   }
-  if (!existingUsers || !existingUsers.has(body.email.trim().toLowerCase())) {
-    return { status: 404, body: { message: 'User not found' } };
-  }
-  return { status: 200, body: { message: 'Reset password email sent' } };
+  // Security: always return generic success, don't reveal if email exists
+  return { status: 200, body: { message: 'If an account with that email exists, a password reset link has been sent.' } };
 }
 
-let existingUsers = null;
-function setExistingUsers(emailSet) {
-  existingUsers = emailSet;
+function runVerifyEmail(query) {
+  const token = query && query.token;
+  if (!token || typeof token !== 'string' || !token.trim()) {
+    return { status: 400, body: { message: 'Verification token is required' } };
+  }
+  if (token === 'expired-or-invalid-token') {
+    return { status: 400, body: { message: 'Invalid or expired verification token' } };
+  }
+  return { status: 200, body: { message: 'Email verified successfully! You can now log in.' } };
 }
 
 function runResetPassword(body) {
@@ -86,7 +90,7 @@ function runResetPassword(body) {
     return { status: 400, body: { message: 'Token and new password are required' } };
   }
   if (typeof body.token !== 'string') {
-    return { status: 400, body: { message: 'Token is required' } };
+    return { status: 400, body: { message: 'Reset token is required' } };
   }
   if (typeof body.newPassword !== 'string') {
     return { status: 400, body: { message: 'New password is required' } };
@@ -94,7 +98,10 @@ function runResetPassword(body) {
   if (body.newPassword.length < 6) {
     return { status: 400, body: { message: 'New password must be at least 6 characters long' } };
   }
-  return { status: 200, body: { message: 'Password reset successful' } };
+  if (body.token === 'expired-token') {
+    return { status: 400, body: { message: 'Invalid or expired reset token' } };
+  }
+  return { status: 200, body: { message: 'Password reset successful! You can now log in with your new password.' } };
 }
 
 // ----------------------------------------------------------------
@@ -364,15 +371,11 @@ describe('validateToken', () => {
 });
 
 describe('forgotPassword', () => {
-  beforeEach(() => {
-    setExistingUsers(null);
-  });
 
-  test('returns 200 when email is valid and user exists', () => {
-    setExistingUsers(new Set(['user@test.com']));
+  test('returns 200 with generic message when email is valid', () => {
     const result = runForgotPassword({ email: 'user@test.com' });
     expect(result.status).toBe(200);
-    expect(result.body.message).toBe('Reset password email sent');
+    expect(result.body.message).toContain('If an account with that email exists');
   });
 
   test('rejects missing email', () => {
@@ -397,19 +400,47 @@ describe('forgotPassword', () => {
     expect(result.status).toBe(400);
   });
 
-  test('returns 404 when user not found', () => {
-    setExistingUsers(new Set(['other@test.com']));
-    const result = runForgotPassword({ email: 'unknown@test.com' });
-    expect(result.status).toBe(404);
-    expect(result.body.message).toBe('User not found');
+  test('does NOT reveal whether email exists (security)', () => {
+    // Both existing and non-existing emails return the same 200 message
+    const existingResult = runForgotPassword({ email: 'existing@test.com' });
+    const unknownResult = runForgotPassword({ email: 'unknown@test.com' });
+    expect(existingResult.status).toBe(200);
+    expect(unknownResult.status).toBe(200);
+    expect(existingResult.body.message).toBe(unknownResult.body.message);
+  });
+});
+
+describe('verifyEmail', () => {
+
+  test('returns 200 with valid token', () => {
+    const result = runVerifyEmail({ token: 'valid-verification-token' });
+    expect(result.status).toBe(200);
+    expect(result.body.message).toContain('verified');
+  });
+
+  test('rejects missing token', () => {
+    const result = runVerifyEmail({});
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Verification token is required');
+  });
+
+  test('rejects expired or invalid token', () => {
+    const result = runVerifyEmail({ token: 'expired-or-invalid-token' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid or expired verification token');
+  });
+
+  test('rejects null query', () => {
+    const result = runVerifyEmail(null);
+    expect(result.status).toBe(400);
   });
 });
 
 describe('resetPassword', () => {
   test('returns 200 on success', () => {
-    const result = runResetPassword({ token: 'reset-token-123', newPassword: 'newPassword456' });
+    const result = runResetPassword({ token: 'valid-reset-token', newPassword: 'newPassword456' });
     expect(result.status).toBe(200);
-    expect(result.body.message).toBe('Password reset successful');
+    expect(result.body.message).toContain('Password reset successful');
   });
 
   test('rejects missing token', () => {
@@ -419,7 +450,7 @@ describe('resetPassword', () => {
   });
 
   test('rejects missing newPassword', () => {
-    const result = runResetPassword({ token: 'reset-token-123' });
+    const result = runResetPassword({ token: 'valid-reset-token' });
     expect(result.status).toBe(400);
   });
 
@@ -442,6 +473,12 @@ describe('resetPassword', () => {
   test('accepts newPassword of exactly 6 characters', () => {
     const result = runResetPassword({ token: 'valid-token', newPassword: '123456' });
     expect(result.status).toBe(200);
+  });
+
+  test('rejects expired token', () => {
+    const result = runResetPassword({ token: 'expired-token', newPassword: 'newpass123' });
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe('Invalid or expired reset token');
   });
 
   test('rejects empty body', () => {
