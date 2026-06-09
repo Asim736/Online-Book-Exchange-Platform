@@ -12,7 +12,10 @@ const createTransporter = () => {
 
   return nodemailer.createTransport({
     service: 'gmail',
-    auth: { user, pass }
+    auth: { user, pass },
+    connectionTimeout: 15000,  // 15s timeout — fail fast instead of hanging
+    greetingTimeout: 10000,
+    socketTimeout: 20000
   });
 };
 
@@ -83,7 +86,16 @@ export async function sendVerificationEmail(to, token) {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] Verification email sent to ${to}: ${info.messageId}`);
+  } catch (error) {
+    console.error(`[EMAIL] Failed to send verification email to ${to}:`, error.message);
+    if (error.code === 'EAUTH') {
+      console.error('[EMAIL] Authentication failed — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
+    }
+    throw error;
+  }
 };
 
 /**
@@ -153,5 +165,14 @@ export async function sendResetPasswordEmail(to, token) {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] Reset password email sent to ${to}: ${info.messageId}`);
+  } catch (error) {
+    console.error(`[EMAIL] Failed to send reset password email to ${to}:`, error.message);
+    if (error.code === 'EAUTH') {
+      console.error('[EMAIL] Authentication failed — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
+    }
+    throw error;
+  }
 };
