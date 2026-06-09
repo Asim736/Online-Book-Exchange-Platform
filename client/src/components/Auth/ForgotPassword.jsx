@@ -46,28 +46,29 @@ const ForgotPassword = () => {
         {error && <div className="auth-error">{error}</div>}
 
         {!submitted ? (
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
+          <>
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                />
+              </div>
 
-            <button type="submit" className="auth-button" disabled={loading}>
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-
-          </form>
+              <button type="submit" className="auth-button" disabled={loading}>
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+            </form>
             <p className="auth-footer">
               <Link to="/login">Back to Login</Link>
             </p>
+          </>
         ) : (
           <div className="success-message" style={{ textAlign: 'center', padding: '20px 0' }}>
             <div className="auth-success-icon" style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
