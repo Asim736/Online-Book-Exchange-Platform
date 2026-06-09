@@ -1,23 +1,17 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-// Create reusable transporter using Gmail App Password
-const createTransporter = () => {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+// Initialize SendGrid with API key
+const apiKey = process.env.SENDGRID_API_KEY;
+if (apiKey) {
+  sgMail.setApiKey(apiKey);
+  console.log('[EMAIL] SendGrid initialized');
+} else {
+  console.warn('[EMAIL] SENDGRID_API_KEY not set — emails will not be sent');
+}
 
-  if (!user || !pass) {
-    console.warn('[EMAIL] GMAIL_USER or GMAIL_APP_PASSWORD not set — emails will not be sent');
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-    connectionTimeout: 15000,  // 15s timeout — fail fast instead of hanging
-    greetingTimeout: 10000,
-    socketTimeout: 20000
-  });
-};
+// Default from email (user must verify this in SendGrid dashboard)
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply.exchangebook@gmail.com';
+const FROM_NAME = 'Book Exchange';
 
 /**
  * Send a verification email to confirm the user's email address.
@@ -25,15 +19,17 @@ const createTransporter = () => {
  * @param {string} token - secure random verification token
  */
 export async function sendVerificationEmail(to, token) {
-  const transporter = createTransporter();
-  if (!transporter) return;
+  if (!apiKey) {
+    console.warn('[EMAIL] SENDGRID_API_KEY not set — skipping verification email');
+    return;
+  }
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://exchangebook.me';
   const verifyLink = `${frontendUrl}/#/verify-email?token=${encodeURIComponent(token)}`;
 
-  const mailOptions = {
-    from: `"Book Exchange" <${process.env.GMAIL_USER || 'noreply@exchangebook.me'}>`,
+  const msg = {
     to,
+    from: { email: FROM_EMAIL, name: FROM_NAME },
     subject: 'Confirm your email address — Book Exchange',
     html: `
       <!DOCTYPE html>
@@ -87,12 +83,12 @@ export async function sendVerificationEmail(to, token) {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL] Verification email sent to ${to}: ${info.messageId}`);
+    const [response] = await sgMail.send(msg);
+    console.log(`[EMAIL] Verification email sent to ${to}: ${response.statusCode}`);
   } catch (error) {
     console.error(`[EMAIL] Failed to send verification email to ${to}:`, error.message);
-    if (error.code === 'EAUTH') {
-      console.error('[EMAIL] Authentication failed — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
+    if (error.response) {
+      console.error('[EMAIL] SendGrid response body:', error.response.body);
     }
     throw error;
   }
@@ -104,15 +100,17 @@ export async function sendVerificationEmail(to, token) {
  * @param {string} token - secure random reset token
  */
 export async function sendResetPasswordEmail(to, token) {
-  const transporter = createTransporter();
-  if (!transporter) return;
+  if (!apiKey) {
+    console.warn('[EMAIL] SENDGRID_API_KEY not set — skipping reset password email');
+    return;
+  }
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://exchangebook.me';
   const resetLink = `${frontendUrl}/#/reset-password?token=${encodeURIComponent(token)}`;
 
-  const mailOptions = {
-    from: `"Book Exchange" <${process.env.GMAIL_USER || 'noreply@exchangebook.me'}>`,
+  const msg = {
     to,
+    from: { email: FROM_EMAIL, name: FROM_NAME },
     subject: 'Reset your password — Book Exchange',
     html: `
       <!DOCTYPE html>
@@ -166,12 +164,12 @@ export async function sendResetPasswordEmail(to, token) {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL] Reset password email sent to ${to}: ${info.messageId}`);
+    const [response] = await sgMail.send(msg);
+    console.log(`[EMAIL] Reset password email sent to ${to}: ${response.statusCode}`);
   } catch (error) {
     console.error(`[EMAIL] Failed to send reset password email to ${to}:`, error.message);
-    if (error.code === 'EAUTH') {
-      console.error('[EMAIL] Authentication failed — check GMAIL_USER and GMAIL_APP_PASSWORD env vars');
+    if (error.response) {
+      console.error('[EMAIL] SendGrid response body:', error.response.body);
     }
     throw error;
   }
