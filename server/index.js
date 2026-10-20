@@ -33,13 +33,25 @@ if (!process.env.MONGODB_URI) {
 const app = express();
 
 // Middleware
-// Robust CORS handling: allow specific origins from env in production, with exact match
-const allowedOrigins = (process.env.NODE_ENV === 'production'
-    ? (process.env.CORS_ORIGINS || '')
-    : 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:4173')
+// Keep the deployed frontend and local development origins allowlisted. Render's
+// CORS_ORIGINS can add other approved origins without replacing these defaults.
+const defaultAllowedOrigins = [
+    'https://asim736.github.io',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:4173',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:4173'
+];
+const configuredOrigins = (process.env.CORS_ORIGINS || '')
     .split(',')
-    .map(o => o.trim())
+    .map(origin => origin.trim().replace(/\/$/, ''))
     .filter(Boolean);
+const allowedOrigins = [...new Set([
+    ...defaultAllowedOrigins,
+    ...configuredOrigins
+])];
 
 const corsOptions = {
     origin: (origin, callback) => {
@@ -60,6 +72,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Security headers (helmet) - must be after CORS middleware
 const isDev = process.env.NODE_ENV !== 'production';
@@ -99,15 +112,31 @@ app.use((req, res, next) => {
     next();
 });
 
-// MongoDB Connection with error handling
+// MongoDB Connection with error handling. Routes check readyState so a temporary
+// database outage is reported as 503 instead of waiting for Mongoose buffering.
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Successfully connected to MongoDB');
     })
     .catch((error) => {
-        console.error('MongoDB connection error:', error);
-        process.exit(1);
+        console.error('[DB] MongoDB connection error:', {
+            name: error.name,
+            message: error.message,
+            code: error.code
+        });
     });
+
+mongoose.connection.on('disconnected', () => {
+    console.error('[DB] MongoDB disconnected');
+});
+
+mongoose.connection.on('error', (error) => {
+    console.error('[DB] MongoDB runtime error:', {
+        name: error.name,
+        message: error.message,
+        code: error.code
+    });
+});
 
 // Test route
 app.get('/api/test', (req, res) => {
@@ -116,9 +145,11 @@ app.get('/api/test', (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
+    const databaseReady = mongoose.connection.readyState === 1;
+    res.status(databaseReady ? 200 : 503).json({
+        status: databaseReady ? 'OK' : 'DEGRADED',
         message: 'Server is running',
+        database: databaseReady ? 'connected' : 'unavailable',
         timestamp: new Date().toISOString()
     });
 });
@@ -204,8 +235,24 @@ app.get('*', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Something went wrong!' });
+    console.error('[ERROR]', {
+        method: req.method,
+        path: req.originalUrl,
+        name: err.name,
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+    });
+
+    if (err.message?.startsWith('CORS: Origin not allowed')) {
+        return res.status(403).json({ message: 'Origin is not allowed' });
+    }
+
+    if (err.name === 'MulterError') {
+        return res.status(400).json({ message: 'Invalid file upload' });
+    }
+
+    return res.status(500).json({ message: 'Something went wrong!' });
 });
 
 const PORT = process.env.PORT || 3000;

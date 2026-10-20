@@ -18,9 +18,28 @@ import User from '../models/User.js';
 // Example usage
 export const getAllBooks = async (req, res) => {
   try {
-    // Pagination params
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 12;
+    if (Book.db.readyState !== 1) {
+      return res.status(503).json({
+        message: 'Books are temporarily unavailable. Database connection is not ready.'
+      });
+    }
+
+    const requestedPage = Number(req.query.page ?? 1);
+    const requestedLimit = Number(req.query.limit ?? 12);
+    if (
+      !Number.isInteger(requestedPage) ||
+      !Number.isInteger(requestedLimit) ||
+      requestedPage < 1 ||
+      requestedLimit < 1 ||
+      requestedLimit > 100
+    ) {
+      return res.status(400).json({
+        message: 'page must be a positive integer and limit must be an integer from 1 to 100'
+      });
+    }
+
+    const page = requestedPage;
+    const limit = requestedLimit;
     const skip = (page - 1) * limit;
 
     // Filtering params - sanitize user inputs to prevent NoSQL injection
@@ -77,10 +96,14 @@ export const getAllBooks = async (req, res) => {
       pages: Math.ceil(total / limit)
     });
   } catch (error) {
-    console.error('Error fetching books:', error);
+    console.error('[BOOKS] Error fetching books:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     res.status(500).json({ 
-      message: 'Error fetching books', 
-      error: error.message 
+      message: 'Error fetching books'
     });
   }
 };
